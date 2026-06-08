@@ -833,6 +833,15 @@ async function loadKnowledgeBase() {
     }
 }
 
+function getDiseaseIcon(name) {
+    const lowerName = name.toLowerCase();
+    if (lowerName.includes("aeromonas")) return "🦠";     // Bakteri Aeromonas
+    if (lowerName.includes("jamur")) return "🍄";         // Jamur/Fungi Saprolegnia
+    if (lowerName.includes("malnutrisi")) return "🦴";   // Defisiensi gizi (kurus/tulang)
+    if (lowerName.includes("overfeeding")) return "🎈";   // Kembung perut buncit (balon)
+    return "🐟";
+}
+
 function displayDiseases(diseases) {
     const grid = document.getElementById("disease-directory-grid");
     if (!grid) return;
@@ -844,10 +853,11 @@ function displayDiseases(diseases) {
     actualDiseases.forEach(d => {
         const card = document.createElement("div");
         card.className = "glass-card disease-card";
+        const icon = getDiseaseIcon(d.nama);
         card.innerHTML = `
             <div class="disease-header">
                 <h3>${d.nama.replace("_", " ")}</h3>
-                <span class="feature-icon" style="margin-bottom:0;width:35px;height:35px;font-size:16px;">🦠</span>
+                <span class="feature-icon" style="margin-bottom:0;width:35px;height:35px;font-size:16px;">${icon}</span>
             </div>
             <div class="disease-sci">${d.nama_ilmiah || "Bacterial Infection"}</div>
             <p style="font-size: 13px; color: var(--text-muted); display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden;">

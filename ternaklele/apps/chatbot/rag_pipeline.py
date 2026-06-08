@@ -83,6 +83,7 @@ def get_knowledge_context(query: str, top_k: int = 4) -> str:
             embedder = OpenAIEmbeddings(
                 model="text-embedding-3-small",
                 api_key=settings.OPENAI_API_KEY,
+                timeout=2.0,  # Batasi timeout 2 detik agar tidak membekukan server saat offline
             )
             embedding = embedder.embed_query(query)
             results = (
@@ -322,6 +323,7 @@ def get_ai_response(user_message: str, history: list = None) -> str:
                 temperature=0.3,
                 max_tokens=800,
                 api_key=settings.OPENAI_API_KEY,
+                timeout=2.0,  # Batasi timeout 2 detik agar tidak membekukan server saat offline
             )
 
             response = llm.invoke(messages)

@@ -71,6 +71,9 @@ if _db_url.startswith("sqlite"):
         "default": {
             "ENGINE": "django.db.backends.sqlite3",
             "NAME": BASE_DIR / "db.sqlite3",
+            "OPTIONS": {
+                "timeout": 30,  # Meningkatkan batas timeout untuk menghindari 'database is locked'
+            }
         }
     }
 else:

@@ -1,0 +1,528 @@
+
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ternak Lele — Smart Aquaculture System</title>
+    <meta name="description" content="Deteksi penyakit ikan lele berbasis AI dan asisten chatbot cerdas terintegrasi untuk petambak lele modern.">
+    
+    <!-- CSS Stylesheets -->
+    <link rel="stylesheet" href="css/styles.css">
+    
+    <!-- Boxicons for modern icons -->
+    <link href="https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css" rel="stylesheet">
+</head>
+<body>
+
+    <div class="app-container">
+        
+        <!-- SIDEBAR NAVIGATION -->
+        <aside class="sidebar">
+            <div class="brand">
+                <span class="brand-icon">🐟</span>
+                <span class="brand-text">Ternak Lele</span>
+            </div>
+            
+            <ul class="nav-links">
+                <li class="nav-item active" id="nav-landing-item">
+                    <a href="#" data-section="landing">
+                        <i class="bx bx-home-alt nav-icon"></i>
+                        <span>Beranda</span>
+                    </a>
+                </li>
+                <li class="nav-item" id="nav-dashboard-item" style="display: none;">
+                    <a href="#" data-section="dashboard">
+                        <i class="bx bx-grid-alt nav-icon"></i>
+                        <span>Dashboard</span>
+                    </a>
+                </li>
+                <li class="nav-item" id="nav-detection-item">
+                    <a href="#" data-section="detection">
+                        <i class="bx bx-scan nav-icon"></i>
+                        <span>Deteksi AI</span>
+                    </a>
+                </li>
+                <li class="nav-item" id="nav-chatbot-item">
+                    <a href="#" data-section="chatbot">
+                        <i class="bx bx-bot nav-icon"></i>
+                        <span>Tanya Leli</span>
+                    </a>
+                </li>
+                <li class="nav-item" id="nav-knowledge-item">
+                    <a href="#" data-section="knowledge">
+                        <i class="bx bx-book-open nav-icon"></i>
+                        <span>Edukasi</span>
+                    </a>
+                </li>
+                <li class="nav-item" id="nav-history-item" style="display: none;">
+                    <a href="#" data-section="history">
+                        <i class="bx bx-history nav-icon"></i>
+                        <span>Riwayat</span>
+                    </a>
+                </li>
+                <li class="nav-item" id="nav-login-item">
+                    <a href="#" data-section="auth" class="nav-action">
+                        <i class="bx bx-log-in nav-icon"></i>
+                        <span>Masuk / Daftar</span>
+                    </a>
+                </li>
+            </ul>
+            
+            <!-- User Profile Widget (Bottom of Sidebar) -->
+            <div class="user-profile-widget" style="display: none;">
+                <div class="user-avatar">TL</div>
+                <div class="user-info">
+                    <div class="user-name">Guest</div>
+                    <div class="user-role">Pembudidaya</div>
+                </div>
+                <button class="logout-btn" title="Keluar">
+                    <i class="bx bx-log-out"></i>
+                </button>
+            </div>
+        </aside>
+        
+        <!-- MAIN CONTENT PANEL -->
+        <main class="main-content">
+            
+            <!-- ==========================================
+                 1. LANDING PAGE SECTION
+                 ========================================== -->
+            <section id="section-landing" class="app-section active">
+                <div class="landing-hero">
+                    <div class="hero-content">
+                        <span class="hero-tagline">SMART AQUACULTURE</span>
+                        <h1 class="hero-title">Budidaya Lele Lebih Cerdas dengan <span>Teknologi AI</span></h1>
+                        <p class="hero-desc">
+                            Kurangi risiko kegagalan panen hingga di bawah 10% dengan deteksi penyakit ikan lele menggunakan Computer Vision dan konsultasi instan bersama asisten pintar Leli.
+                        </p>
+                        <div class="hero-buttons">
+                            <button class="btn btn-primary nav-action" data-section="detection">
+                                <i class="bx bx-scan"></i> Coba Deteksi AI
+                            </button>
+                            <button class="btn btn-secondary nav-action" data-section="knowledge">
+                                Pelajari Penyakit
+                            </button>
+                        </div>
+                    </div>
+                    <div class="hero-visual">
+                        <div class="hero-circle"></div>
+                        <!-- Generating a mock illustration using nice UI layout -->
+                        <div class="hero-img glass-card" style="padding: 15px; width: 420px;">
+                            <div style="background: #0d281a; border-radius: 12px; height: 260px; display: flex; flex-direction: column; align-items: center; justify-content: center; position: relative; overflow: hidden; border: 1px solid var(--primary);">
+                                <span style="font-size: 72px;">🐟</span>
+                                <div style="position: absolute; bottom: 20px; background: rgba(0,0,0,0.6); padding: 8px 16px; border-radius: 30px; display: flex; align-items: center; gap: 8px; border: 1px solid var(--primary-hover);">
+                                    <span style="width: 8px; height: 8px; background: var(--primary); border-radius: 50%;"></span>
+                                    <span style="font-size: 12px; font-weight: bold; color: #fff;">Status Lele: Sehat (99%)</span>
+                                </div>
+                            </div>
+                            <div style="margin-top: 15px; display: flex; gap: 10px; justify-content: space-between;">
+                                <div class="glass-card" style="padding: 10px; flex: 1; text-align: center; border-color: rgba(255,255,255,0.05);">
+                                    <div style="font-size: 12px; color: var(--text-muted);">Suhu Air</div>
+                                    <div style="font-weight: bold; color: var(--primary);">28.5°C</div>
+                                </div>
+                                <div class="glass-card" style="padding: 10px; flex: 1; text-align: center; border-color: rgba(255,255,255,0.05);">
+                                    <div style="font-size: 12px; color: var(--text-muted);">pH Air</div>
+                                    <div style="font-weight: bold; color: var(--primary);">7.2</div>
+                                </div>
+                                <div class="glass-card" style="padding: 10px; flex: 1; text-align: center; border-color: rgba(255,255,255,0.05);">
+                                    <div style="font-size: 12px; color: var(--text-muted);">Oksigen</div>
+                                    <div style="font-weight: bold; color: var(--primary);">5.8 mg/L</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="features-section">
+                    <div class="section-header">
+                        <h2>Fitur Unggulan Platform</h2>
+                        <p>Didesain khusus untuk membantu pembudidaya lele menaikkan profit dan meminimalkan mortalitas bibit.</p>
+                    </div>
+                    
+                    <div class="features-grid">
+                        <div class="glass-card feature-card">
+                            <span class="feature-icon">👁️</span>
+                            <h3>Deteksi Penyakit Cepat</h3>
+                            <p>Unggah foto bagian lele yang luka, dan kecerdasan buatan kami akan menganalisis penyakit dalam hitungan detik.</p>
+                        </div>
+                        <div class="glass-card feature-card">
+                            <span class="feature-icon">💬</span>
+                            <h3>Asisten AI RAG (Leli)</h3>
+                            <p>Tanya apa saja seputar dosis pakan, pH air, probiotik, atau penanganan khusus kapanpun Anda butuhkan.</p>
+                        </div>
+                        <div class="glass-card feature-card">
+                            <span class="feature-icon">📖</span>
+                            <h3>Knowledge Base Terpadu</h3>
+                            <p>Akses direktori lengkap penyakit lele, nama ilmiah, penyebab penyakit, hingga panduan obat-obatan bersertifikasi.</p>
+                        </div>
+                    </div>
+                </div>
+            </section>
+            
+            <!-- ==========================================
+                 2. AUTHENTICATION SECTION
+                 ========================================== -->
+            <section id="section-auth" class="app-section">
+                <div class="auth-container glass-card">
+                    <div class="auth-tabs">
+                        <div id="tab-login" class="auth-tab active">Masuk</div>
+                        <div id="tab-register" class="auth-tab">Daftar</div>
+                    </div>
+                    
+                    <!-- Form Login -->
+                    <form id="form-login">
+                        <h2 style="font-size: 24px; margin-bottom: 20px; text-align: center;">Masuk Akun</h2>
+                        <div class="form-group">
+                            <label for="login-username">Nama Pengguna (Username)</label>
+                            <input type="text" id="login-username" name="username" class="form-control" placeholder="Masukkan username Anda" required autocomplete="username">
+                        </div>
+                        <div class="form-group">
+                            <label for="login-password">Kata Sandi</label>
+                            <input type="password" id="login-password" name="password" class="form-control" placeholder="••••••••" required autocomplete="current-password">
+                        </div>
+                        <button type="submit" class="btn btn-primary" style="width: 100%; margin-top: 10px;">Masuk</button>
+                    </form>
+                    
+                    <!-- Form Register -->
+                    <form id="form-register" style="display: none;">
+                        <h2 style="font-size: 24px; margin-bottom: 20px; text-align: center;">Daftar Akun Baru</h2>
+                        <div class="form-group">
+                            <label for="reg-username">Nama Pengguna (Username)</label>
+                            <input type="text" id="reg-username" name="username" class="form-control" placeholder="Contoh: petanilele" required autocomplete="username">
+                        </div>
+                        <div class="form-group">
+                            <label for="reg-email">Alamat Email</label>
+                            <input type="email" id="reg-email" name="email" class="form-control" placeholder="name@domain.com" required autocomplete="email">
+                        </div>
+                        <div class="form-group">
+                            <label for="reg-phone">Nomor Telepon/WA</label>
+                            <input type="text" id="reg-phone" name="no_telepon" class="form-control" placeholder="Contoh: 08123456789">
+                        </div>
+                        <div class="form-group">
+                            <label for="reg-pool">Lokasi Kolam</label>
+                            <input type="text" id="reg-pool" name="lokasi_kolam" class="form-control" placeholder="Kota atau Kecamatan kolam Anda">
+                        </div>
+                        <div class="form-group">
+                            <label for="reg-password">Kata Sandi (Min. 8 karakter)</label>
+                            <input type="password" id="reg-password" name="password" class="form-control" placeholder="••••••••" required autocomplete="new-password">
+                        </div>
+                        <button type="submit" class="btn btn-primary" style="width: 100%; margin-top: 10px;">Daftar Akun</button>
+                    </form>
+                </div>
+            </section>
+            
+            <!-- ==========================================
+                 3. USER DASHBOARD OVERVIEW
+                 ========================================== -->
+            <section id="section-dashboard" class="app-section">
+                <div class="section-header" style="text-align: left; margin-bottom: 30px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 15px;">
+                    <div>
+                        <h2 style="font-size: 32px;">Halo, <span id="welcome-name">Petambak</span>!</h2>
+                        <p style="margin: 0;"><i class="bx bx-map" style="color:var(--primary);"></i> Lokasi Kolam: <strong id="profile-location">Loading...</strong></p>
+                    </div>
+                    <button class="btn btn-primary nav-action" data-section="detection">
+                        <i class="bx bx-scan"></i> Analisis Cepat
+                    </button>
+                </div>
+                
+                <div class="dashboard-grid">
+                    <div class="glass-card stat-card">
+                        <div class="feature-icon" style="background: rgba(59,130,246,0.15); color: var(--info); margin-bottom: 0;">
+                            <i class="bx bx-scan"></i>
+                        </div>
+                        <div>
+                            <div class="stat-val" id="stat-total">0</div>
+                            <div class="stat-label">Total Deteksi</div>
+                        </div>
+                    </div>
+                    
+                    <div class="glass-card stat-card">
+                        <div class="feature-icon" style="margin-bottom: 0;">
+                            <i class="bx bx-check-circle"></i>
+                        </div>
+                        <div>
+                            <div class="stat-val" id="stat-sehat" style="color: var(--primary);">0</div>
+                            <div class="stat-label">Diagnosis Sehat</div>
+                        </div>
+                    </div>
+                    
+                    <div class="glass-card stat-card">
+                        <div class="feature-icon" style="background: rgba(239, 68, 68, 0.15); color: var(--danger); margin-bottom: 0;">
+                            <i class="bx bx-error-alt"></i>
+                        </div>
+                        <div>
+                            <div class="stat-val" id="stat-sakit" style="color: var(--danger);">0</div>
+                            <div class="stat-label">Terindikasi Penyakit</div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div style="display: grid; grid-template-columns: 2fr 1fr; gap: 30px; margin-top: 30px;">
+                    <!-- Quick action cards -->
+                    <div class="glass-card">
+                        <h3 style="font-size: 20px; margin-bottom: 20px; display: flex; align-items: center; gap: 10px;">
+                            <i class="bx bx-bulb" style="color: var(--accent);"></i> Tips Budidaya Hari Ini
+                        </h3>
+                        <ul style="list-style: none; display: flex; flex-direction: column; gap: 15px;">
+                            <li style="display: flex; gap: 12px; align-items: flex-start; padding: 12px; background: rgba(255,255,255,0.02); border-radius: 8px;">
+                                <span style="font-size: 20px;">💡</span>
+                                <div>
+                                    <strong style="display: block; font-size: 14px; margin-bottom: 3px;">Pencegahan Kembung Air Dingin</strong>
+                                    <span style="font-size: 13px; color: var(--text-muted);">Di musim hujan, suhu kolam menurun drastis. Tambahkan garam krosok 1kg/m³ untuk mencegah kembung pada benih lele.</span>
+                                </div>
+                            </li>
+                            <li style="display: flex; gap: 12px; align-items: flex-start; padding: 12px; background: rgba(255,255,255,0.02); border-radius: 8px;">
+                                <span style="font-size: 20px;">💡</span>
+                                <div>
+                                    <strong style="display: block; font-size: 14px; margin-bottom: 3px;">Pemberian Pakan Malam Hari</strong>
+                                    <span style="font-size: 13px; color: var(--text-muted);">Lele bersifat nokturnal. Berikan 60% porsi pakan harian pada sore/malam hari agar penyerapan gizi lebih efisien.</span>
+                                </div>
+                            </li>
+                        </ul>
+                    </div>
+                    
+                    <div class="glass-card" style="display: flex; flex-direction: column; justify-content: center; align-items: center; text-align: center; gap: 15px; border-color: var(--primary-glow);">
+                        <span style="font-size: 48px; animation: float 3s infinite;">💬</span>
+                        <h3 style="font-size: 18px;">Konsultasi 24 Jam</h3>
+                        <p style="font-size: 13px; color: var(--text-muted);">Tanya asisten pintar Leli mengenai gejala aneh atau resep obat ikan lele.</p>
+                        <button class="btn btn-primary nav-action" data-section="chatbot" style="padding: 10px 20px; font-size: 13px; width: 100%;">Tanya Leli</button>
+                    </div>
+                </div>
+            </section>
+            
+            <!-- ==========================================
+                 4. DETEKSI AI WORKSPACE
+                 ========================================== -->
+            <section id="section-detection" class="app-section">
+                <div class="section-header" style="text-align: left; margin-bottom: 30px;">
+                    <h2 style="font-size: 32px;">Deteksi Penyakit AI</h2>
+                    <p style="margin: 0;">Unggah foto tubuh ikan lele yang terluka atau bergejala untuk dianalisis oleh modul visi komputer EfficientNet-B3.</p>
+                </div>
+                
+                <div class="glass-card">
+                    <!-- Dropzone uploader -->
+                    <div class="upload-area" id="upload-dropzone">
+                        <input type="file" id="file-input" accept="image/jpeg,image/png,image/webp">
+                        <i class="bx bx-cloud-upload upload-icon"></i>
+                        <div class="upload-text">Tarik & Lepas gambar di sini, atau klik untuk memilih file</div>
+                        <div class="upload-hint">Format yang didukung: JPEG, PNG, WEBP (Maksimal 10MB)</div>
+                    </div>
+                    
+                    <!-- Selected image preview -->
+                    <div class="preview-container">
+                        <img src="" alt="Pratinjau Foto" class="preview-img">
+                    </div>
+                    
+                    <div style="text-align: center;">
+                        <button class="btn btn-primary" id="btn-analyze-ai" style="display: none; padding: 14px 40px;">
+                            🐟 Mulai Analisis AI
+                        </button>
+                    </div>
+                </div>
+                
+                <!-- Prediction Results Card -->
+                <div class="result-container">
+                    <div class="glass-card" style="border-color: var(--primary-glow); margin-top: 30px;">
+                        <h2 style="font-size: 24px; margin-bottom: 24px; border-bottom: 1px solid rgba(255,255,255,0.05); padding-bottom: 12px; display: flex; align-items: center; justify-content: space-between;">
+                            <span>Hasil Analisis AI</span>
+                            <span id="res-badge" class="result-badge badge-sehat">Sehat</span>
+                        </h2>
+                        
+                        <div class="result-layout">
+                            <!-- Left Column: Confidence Radial + Probabilities -->
+                            <div>
+                                <h3 style="font-size: 16px; margin-bottom: 15px; color: var(--text-muted);">Keyakinan Model (Confidence)</h3>
+                                
+                                <div class="radial-container">
+                                    <div class="progress-ring">
+                                        <svg width="120" height="120">
+                                            <circle class="progress-ring-bg" cx="55" cy="55" r="55"></circle>
+                                            <circle class="progress-ring-bar" cx="55" cy="55" r="55"></circle>
+                                        </svg>
+                                        <div class="progress-ring-text" id="res-score-text">0%</div>
+                                    </div>
+                                    <div style="text-align: center; margin-top: 10px;">
+                                        <span style="font-size: 18px; font-weight: bold;" id="res-label">Loading...</span>
+                                    </div>
+                                </div>
+                                
+                                <h3 style="font-size: 16px; margin-top: 30px; margin-bottom: 15px; color: var(--text-muted);">Distribusi Probabilitas</h3>
+                                <div id="res-probabilities" class="prob-list">
+                                    <!-- Dynamic Prob bars -->
+                                </div>
+                            </div>
+                            
+                            <!-- Right Column: Description & Treatment Recommendation -->
+                            <div style="display: flex; flex-direction: column; gap: 24px; border-left: 1px solid rgba(255,255,255,0.05); padding-left: 30px;">
+                                <div>
+                                    <h3 style="font-size: 16px; color: var(--primary); margin-bottom: 8px;">Deskripsi Diagnosis</h3>
+                                    <p id="res-desc" style="font-size: 14px; line-height: 1.6;">Menunggu input...</p>
+                                </div>
+                                
+                                <div>
+                                    <h3 style="font-size: 16px; color: var(--primary); margin-bottom: 8px;">Rekomendasi Penanganan</h3>
+                                    <p id="res-treatment" style="font-size: 14px; line-height: 1.6; white-space: pre-wrap;">Menunggu input...</p>
+                                </div>
+                                
+                                <div style="margin-top: auto; padding-top: 20px; border-top: 1px solid rgba(255,255,255,0.05); display: flex; gap: 15px;">
+                                    <button class="btn btn-primary" id="btn-chat-shortcut" style="flex: 1; padding: 12px 20px; font-size: 13px;">
+                                        <i class="bx bx-bot"></i> Tanya Leli Tentang Penyakit Ini
+                                    </button>
+                                    <button class="btn btn-secondary nav-action" data-section="knowledge" style="flex: 1; padding: 12px 20px; font-size: 13px;">
+                                        <i class="bx bx-book-open"></i> Buka Direktori Penyakit
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+            
+            <!-- ==========================================
+                 5. CHATBOT INTERFACE (LELI ASISTEN)
+                 ========================================== -->
+            <section id="section-chatbot" class="app-section">
+                <div class="chat-layout">
+                    <!-- Left: Chat Sessions List -->
+                    <aside class="glass-card chat-sessions-pane">
+                        <button class="btn btn-primary" id="btn-new-session" style="width:100%; font-size:13px; padding:10px;">
+                            <i class="bx bx-plus"></i> Chat Baru
+                        </button>
+                        <h4 style="font-size: 12px; text-transform: uppercase; color: var(--text-muted); margin-top: 10px;">Riwayat Chat</h4>
+                        <div class="sessions-list" id="chat-sessions-list">
+                            <!-- Dynamic Sessions -->
+                        </div>
+                    </aside>
+                    
+                    <!-- Right: Active Chat Area -->
+                    <div class="glass-card chat-box-pane">
+                        <header class="chat-header">
+                            <div class="user-avatar" style="background: var(--primary-dark); border-color: var(--primary);">L</div>
+                            <div>
+                                <h3 style="font-size: 16px; font-weight: 700;">Leli — Asisten Ahli Lele</h3>
+                                <div style="display:flex; align-items:center; gap:6px; font-size:12px; color:var(--text-muted);">
+                                    <span class="leli-status"></span>
+                                    <span>Aktif 24/7 (RAG AI)</span>
+                                </div>
+                            </div>
+                        </header>
+                        
+                        <div class="chat-messages" id="chat-messages-container">
+                            <!-- Dynamic bubbles -->
+                        </div>
+                        
+                        <div class="chat-input-area">
+                            <textarea id="chat-message-input" class="chat-input" placeholder="Tanyakan seputar kualitas air, dosis obat, gejala penyakit... (Tekan Enter untuk kirim)"></textarea>
+                            <button class="btn btn-primary" id="btn-send-message" style="width: 50px; height: 50px; padding: 0; border-radius: 12px;">
+                                <i class="bx bx-send" style="font-size: 20px;"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </section>
+            
+            <!-- ==========================================
+                 6. KNOWLEDGE DIRECTORY SECTION
+                 ========================================== -->
+            <section id="section-knowledge" class="app-section">
+                <div class="section-header" style="text-align: left; margin-bottom: 30px;">
+                    <h2 style="font-size: 32px;">Direktori Edukasi & Penyakit</h2>
+                    <p style="margin: 0;">Pelajari gejala klinis, patogen penyebab, cara penanganan, dan obat yang direkomendasikan pakar perikanan.</p>
+                </div>
+                
+                <h2 style="font-size:22px; margin-bottom:15px; display:flex; align-items:center; gap:8px;">
+                    <i class="bx bx-virus" style="color:var(--danger);"></i> Direktori Penyakit Lele
+                </h2>
+                <div class="knowledge-grid" id="disease-directory-grid">
+                    <!-- Dynamic Disease Cards -->
+                </div>
+                
+                <h2 style="font-size:22px; margin-top:50px; margin-bottom:15px; display:flex; align-items:center; gap:8px;">
+                    <i class="bx bx-book-bookmark" style="color:var(--primary);"></i> Artikel Manajemen & Budidaya
+                </h2>
+                <div class="knowledge-grid" id="articles-directory-grid">
+                    <!-- Dynamic Article Cards -->
+                </div>
+            </section>
+            
+            <!-- ==========================================
+                 7. DETECTION HISTORY SECTION
+                 ========================================== -->
+            <section id="section-history" class="app-section">
+                <div class="section-header" style="text-align: left; margin-bottom: 30px;">
+                    <h2 style="font-size: 32px;">Riwayat Deteksi Penyakit</h2>
+                    <p style="margin: 0;">Daftar seluruh riwayat unggahan gambar lele dan hasil analisis kecerdasan buatan Anda.</p>
+                </div>
+                
+                <div class="glass-card" style="padding: 0; overflow: hidden;">
+                    <div class="history-table-container">
+                        <table class="history-table">
+                            <thead>
+                                <tr>
+                                    <th>ID Log</th>
+                                    <th>Tanggal</th>
+                                    <th>Penyakit Terdeteksi</th>
+                                    <th>Skor Keyakinan</th>
+                                    <th>Status Proses</th>
+                                    <th>Aksi</th>
+                                </tr>
+                            </thead>
+                            <tbody id="history-table-body">
+                                <!-- Dynamic History Rows -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </section>
+            
+        </main>
+        
+    </div>
+    
+    <!-- DETAIL KNOWLEDGE MODAL -->
+    <div class="modal-overlay" id="disease-detail-modal">
+        <div class="modal-content">
+            <button class="modal-close"><i class="bx bx-x"></i></button>
+            <div class="modal-title-sec">
+                <h2 id="modal-disease-name" style="font-size:28px; color:var(--primary); margin-bottom:4px;">Penyakit</h2>
+                <div id="modal-disease-sci" style="font-style:italic; color:var(--text-muted); font-size:14px;">Nama Ilmiah</div>
+            </div>
+            
+            <div class="modal-section">
+                <div id="modal-disease-desc" style="font-size:14px; line-height:1.6;">Deskripsi penyakit lele.</div>
+            </div>
+            
+            <div class="modal-section">
+                <div class="modal-section-title">Gejala Klinis</div>
+                <div id="modal-disease-symptoms" style="font-size:13px;">Bercak merah, kembung.</div>
+            </div>
+            
+            <div class="modal-section">
+                <div class="modal-section-title">Faktor Penyebab</div>
+                <div id="modal-disease-cause" style="font-size:13px;">Bakteri.</div>
+            </div>
+            
+            <div class="modal-section">
+                <div class="modal-section-title">Langkah Pencegahan</div>
+                <div id="modal-disease-prevention" style="font-size:13px;">Jaga sirkulasi air.</div>
+            </div>
+            
+            <div class="modal-section">
+                <div class="modal-section-title">Metode Penanganan</div>
+                <div id="modal-disease-treatment" style="font-size:13px;">Rendam dengan air garam.</div>
+            </div>
+            
+            <div class="modal-section">
+                <div class="modal-section-title">Rekomendasi Obat (Berdasarkan Dosis Pakar)</div>
+                <div id="modal-disease-medicines" style="display:flex; flex-direction:column; gap:12px; margin-top:8px;">
+                    <!-- Dynamic medicine cards -->
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- JS Scripts -->
+    <script src="js/app.js"></script>
+</body>
+</html>
