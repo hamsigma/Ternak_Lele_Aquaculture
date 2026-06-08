@@ -100,6 +100,10 @@ const CHATBOT_KEYWORDS = {
     kolam: ["kolam", "terpal", "beton", "tanah", "persiapan", "luas"],
     bibit: ["bibit", "benih", "anakan", "tebar", "padat tebar"],
     panen: ["panen", "ukuran", "bobot", "waktu panen", "konsumsi"],
+    probiotik: ["probiotik", "em4", "bakteri baik", "fermentasi"],
+    garam: ["garam", "natrium", "sodium", "krosok"],
+    kanibal: ["kanibal", "saling makan", "grading", "sortasi", "kepadatan", "ukuran beda"],
+    biaya: ["biaya", "modal", "untung", "fcr", "keuntungan", "harga", "pasar"],
     aeromonas: ["aeromonas", "borok", "luka", "bakteri", "bercak", "merah"],
     malnutrisi: ["malnutrisi", "gizi", "kepala besar", "kurus", "badan kecil"],
     jamur: ["jamur", "kapas", "putih", "saprolegnia", "fungi"],
@@ -813,34 +817,54 @@ function sendMessage() {
 function getSimulatedLeliResponse(query) {
     const q_lower = query.toLowerCase();
     
+    // Helper helper for random selection
+    const choose = (arr) => arr[Math.floor(Math.random() * arr.length)];
+
     // 1. PERKENALAN DIRI (Self-Introduction)
     if (CHATBOT_KEYWORDS.intro.some(kw => q_lower.includes(kw))) {
-        return (
+        const intro_variations = [
             "Halo Kak! Kenalin, aku **Leli** (asisten AI ahli budidaya ikan lele) 🐟✨\n\n" +
             "Aku diciptakan khusus untuk menemani Kakak dalam merawat kolam lele kesayangan. Kakak bisa tanya-tanya aku tentang:\n" +
             "• **Diagnosis penyakit lele** (seperti Aeromonas, Jamur, Malnutrisi, atau Overfeeding)\n" +
             "• **Tips pakan** yang hemat dan bergizi\n" +
             "• **Menjaga kualitas air** biar lele nggak stres\n" +
             "• **Persiapan kolam** dari awal tebar sampai panen raya!\n\n" +
-            "Ada yang bisa Leli bantu hari ini biar lele kita sehat dan cepat besar? 😊"
-        );
+            "Ada yang bisa Leli bantu hari ini biar lele kita sehat dan cepat besar? 😊",
+            
+            "Hai Kak! Aku **Leli**, asisten budidaya lele pintar kamu di sini. 🐟👋\n\n" +
+            "Leli siap bantu Kakak memecahkan masalah kolam, mengoptimalkan pakan, mengenali gejala penyakit lele secara dini, hingga tips sortasi lele agar tidak saling kanibal.\n\n" +
+            "Apa yang ingin Kakak tanyakan hari ini?"
+        ];
+        return choose(intro_variations);
     }
     
     // 2. SAPAAN UMUM (Common Greetings)
     if (CHATBOT_KEYWORDS.greeting.some(kw => q_lower.trim() === kw || q_lower.startsWith(kw + " "))) {
-        return (
+        const greeting_variations = [
             "Halo Kak! Senang banget bisa ketemu. 😊\n\n" +
-            "Semoga hari ini kolam lele Kakak dalam kondisi prima ya! Leli siap bantu jawab pertanyaan seputar budidaya, penyakit lele, pakan, atau kualitas air kolam. Kakak mau diskusi tentang apa hari ini?"
-        );
+            "Semoga hari ini kolam lele Kakak dalam kondisi prima ya! Leli siap bantu jawab pertanyaan seputar budidaya, penyakit lele, pakan, atau kualitas air kolam. Kakak mau diskusi tentang apa hari ini?",
+            
+            "Hai Kak! Senang sekali menyapa Kakak hari ini. Bagaimana kondisi kolam lele Anda? 🐟✨\n\n" +
+            "Ada yang bisa Leli bantu? Tanyakan saja seputar pakan, persiapan kolam, air, atau penyakit lele ya!",
+            
+            "Halo Kak! Leli di sini siap menemani diskusi budidaya lele Anda. Semoga lele Anda tumbuh sehat dan nafsu makan kuat! Ada kendala apa di kolam hari ini? 😊"
+        ];
+        return choose(greeting_variations);
     }
     
     // 3. DETEKSI GEJALA PENYAKIT DETAIL
-    for (const key of Object.keys(DISEASES_DB)) {
-        const d = DISEASES_DB[key];
+    for (const d of DISEASES_DB) {
         if (q_lower.includes(d.nama.toLowerCase())) {
             let obat_info = "";
-            if (d.obat_list.length > 0) {
+            if (d.obat_list && d.obat_list.length > 0) {
                 obat_info = "\n\n**Rekomendasi Obat:**\n" + d.obat_list.map(o => `💊 **${o.nama_obat}** (Dosis: ${o.dosis} | Cara: ${o.cara_penggunaan})`).join("\n");
+            }
+            
+            if (d.nama === "Sehat") {
+                return (
+                    "Alhamdulillah! Senang sekali mendengarnya. Kondisi lele Kakak terpantau **Sehat** walafiat. 🐟💚\n\n" +
+                    "Tetap pertahankan ya Kak! Jangan lupa rutin ganti air kolam sekitar 20-30% setiap minggu, berikan pakan berkualitas secara konsisten, dan selalu jaga kebersihan kolam."
+                );
             }
             
             return (
@@ -856,25 +880,38 @@ function getSimulatedLeliResponse(query) {
     
     // 4. KATEGORI BUDIDAYA UMUM
     if (CHATBOT_KEYWORDS.pakan.some(kw => q_lower.includes(kw))) {
-        return (
+        const pakan_variations = [
             "Wah, ngomongin soal pakan lele memang sangat penting Kak! Biar FCR-nya bagus dan cepat panen, ini tips dari Leli:\n\n" +
             "• **Frekuensi**: Berikan 2–3 kali sehari (pagi, sore, malam). Malam hari porsinya bisa agak banyak karena lele aktif di malam hari!\n" +
             "• **Takaran**: Sekitar 3–5% dari total berat lele di kolam Kakak.\n" +
             "• **Protein**: Pilih pelet dengan protein minimal 30% biar dagingnya padat.\n" +
             "• **Bahaya Overfeeding**: Jangan sampai berlebihan ya Kak, karena sisa pakan yang mengendap di dasar kolam bisa jadi racun amonia dan bikin lele kembung/terapung.\n\n" +
-            "Mau tanya resep pakan alternatif atau cara ngitung kebutuhan pakan hariannya, Kak?"
-        );
+            "Mau tanya resep pakan alternatif atau cara ngitung kebutuhan pakan hariannya, Kak?",
+            
+            "Nutrisi pakan menentukan kecepatan lele tumbuh besar Kak! Ini aturan main pakan dari Leli:\n\n" +
+            "• **Bibit (di bawah 5cm)**: Beri pakan tipe tepung/fine-grain berulang 4-5 kali sehari dalam porsi kecil.\n" +
+            "• **Lele Dewasa**: Beri pelet apung diameter sesuai bukaan mulut lele. Cukup 2-3 kali sehari.\n" +
+            "• **Waktu Terbaik**: Pagi jam 7 dan sore jam 5. Hindari memberi makan saat matahari terik di jam 12-1 siang karena suhu panas menurunkan nafsu makan lele.\n\n" +
+            "Mau konsultasi cara fermentasi pelet agar lele lebih mudah mencerna pakan, Kak?"
+        ];
+        return choose(pakan_variations);
     }
     
     if (CHATBOT_KEYWORDS.air.some(kw => q_lower.includes(kw))) {
-        return (
+        const air_variations = [
             "Air kolam itu rumah bagi lele Kak, jadi kalau airnya bersih, lele pasti nyaman dan nafsu makan tinggi! Ini panduannya:\n\n" +
             "• **Kadar pH**: Jaga di kisaran 6.5 sampai 8.0. Kalau terlalu asam, lele gampang sakit.\n" +
             "• **Suhu**: Idealnya 25–30°C. Cuaca pancaroba biasanya bikin suhu tidak stabil.\n" +
             "• **Oksigen (DO)**: Minimal 3-5 mg/L. Kalau lele banyak megap-megap di permukaan pagi hari, itu tandanya kekurangan oksigen.\n" +
             "• **Solusi**: Lakukan penggantian air kolam sebanyak 20-30% secara berkala dan berikan probiotik EM4 untuk mengurai sisa kotoran.\n\n" +
-            "Warna air kolam Kakak sekarang hijau, cokelat, atau hitam pekat?"
-        );
+            "Warna air kolam Kakak sekarang hijau, cokelat, atau hitam pekat?",
+            
+            "Kunci sukses budidaya lele itu sebenarnya di 'Manajemen Air' Kak. Lele yang sakit biasanya karena air kolamnya bermasalah. Leli sarankan:\n\n" +
+            "1. **Buang Lumpur Dasar**: Endapan sisa pakan di dasar kolam menghasilkan gas amonia beracun. Buang secara rutin (sifon).\n" +
+            "2. **Aplikasi Probiotik**: Masukkan probiotik 1-2 minggu sekali untuk mengurai sisa bahan organik.\n" +
+            "3. **Ganti Air**: Jangan ganti seluruh air sekaligus! Cukup buang 20% air dasar kolam lalu isi air baru agar ikan tidak stres akibat perubahan suhu mendadak."
+        ];
+        return choose(air_variations);
     }
     
     if (CHATBOT_KEYWORDS.kolam.some(kw => q_lower.includes(kw))) {
@@ -908,24 +945,77 @@ function getSimulatedLeliResponse(query) {
             "Pemasarannya sudah aman kan Kak? Biasanya dijual ke tengkulak atau langsung ke warung pecel lele?"
         );
     }
-    
-    // 5. JAWABAN LUAR KONTEKS (Out of Context Router)
-    if (CHATBOT_KEYWORDS.outOfContext.some(kw => q_lower.includes(kw)) || q_lower.split(" ").length > 5) {
+
+    if (CHATBOT_KEYWORDS.probiotik.some(kw => q_lower.includes(kw))) {
         return (
-            "Wah, pertanyaan menarik Kak! 😄\n\n" +
-            "Sebenarnya, Leli adalah asisten khusus budidaya lele. Tapi kalau Kakak penasaran tentang itu, sepemahaman Leli, hal tersebut cukup ramai dibahas banyak orang akhir-akhir ini!\n\n" +
-            "Meskipun Leli ahli di dunia air dan kolam lele, kalau Kakak mau ngobrol santai Leli senang-senang saja. Tapi jangan lupa pantau kolam lelenya juga ya Kak! Ada kendala apa di kolam lele Kakak hari ini?"
+            "Probiotik (seperti EM4 Perikanan atau Bacillus) sangat berguna untuk kesehatan pencernaan lele dan penguraian amonia di kolam Kak. Ini panduan menggunakannya:\n\n" +
+            "• **Campur Pakan**: Larutkan 1 tutup botol EM4 + 1 sendok makan molase/gula dalam secangkir air. Bibiskan (semprotkan) secara merata ke 1 kg pelet, diamkan 15 menit agar meresap baru berikan ke lele.\n" +
+            "• **Kualitas Air**: Tuangkan probiotik yang telah diaktifkan ke air kolam setiap 1-2 minggu sekali untuk menjaga kestabilan plankton baik.\n\n" +
+            "Apakah Kakak sudah mulai memakai probiotik di kolam saat ini?"
+        );
+    }
+
+    if (CHATBOT_KEYWORDS.garam.some(kw => q_lower.includes(kw))) {
+        return (
+            "Garam krosok (garam ikan non-yodium) adalah 'obat dewa' yang murah meriah untuk lele Kak! Kegunaannya meliputi:\n\n" +
+            "1. **Pencegahan Stres**: Menjaga keseimbangan osmoregulasi lele saat ganti air kolam atau cuaca ekstrem.\n" +
+            "2. **Desinfektan Alami**: Membunuh parasit kulit dan mencegah spora jamur tumbuh.\n" +
+            "3. **Dosis Aman**: \n" +
+            "   • Pencegahan: 500 gram sampai 1 kg garam per 1.000 liter air kolam.\n" +
+            "   • Pengobatan Jamur: Rendam lele yang sakit dalam wadah khusus dengan dosis 10-20 gram garam per liter air selama 5-10 menit.\n\n" +
+            "Pastikan menggunakan garam krosok kasar kasar ya Kak, jangan garam dapur beryodium!"
+        );
+    }
+
+    if (CHATBOT_KEYWORDS.kanibal.some(kw => q_lower.includes(kw))) {
+        return (
+            "Masalah lele saling memakan (kanibalisme) biasanya dipicu oleh perbedaan ukuran yang mencolok atau pakan yang telat Kak. Solusi terbaik dari Leli:\n\n" +
+            "1. **Grading / Sortasi**: Lakukan penyortiran ukuran lele secara rutin setiap 2 minggu sekali. Pisahkan lele yang berukuran bongsor, sedang, dan kerdil ke kolam berbeda.\n" +
+            "2. **Pemberian Pakan Tepat Waktu**: Lele yang kelaparan akan langsung berburu kawannya yang lebih kecil. Jaga konsistensi jadwal makan lele.\n" +
+            "3. **Padat Tebar yang Sesuai**: Jangan terlalu padat tebar (ideal bibit 100-150 ekor per m² pada air setinggi 80 cm) agar tingkat kompetisi ruang tidak terlalu tinggi.\n\n" +
+            "Apakah lele Kakak saat ini ukurannya sudah mulai terlihat tidak seragam?"
+        );
+    }
+
+    if (CHATBOT_KEYWORDS.biaya.some(kw => q_lower.includes(kw))) {
+        return (
+            "Mengelola pengeluaran modal budidaya lele itu penting agar Kakak bisa untung maksimal! Ini tips dari Leli:\n\n" +
+            "• **Feed Conversion Ratio (FCR)**: Targetkan FCR di bawah 1.1. Artinya, untuk menghasilkan 1 kg daging lele, Kakak hanya butuh menghabiskan pelet maksimal 1.1 kg.\n" +
+            "• **Pakan Alternatif**: Untuk menghemat biaya pakan komersial (pelet pabrik), Kakak bisa selingi dengan pakan alternatif berprotein tinggi seperti maggot BSF, ampas tahu fermentasi, atau ikan rucah rebus.\n" +
+            "• **Biaya Bibit & Listrik**: Catat semua pengeluaran dari awal pembelian bibit, biaya listrik aerator/pompa air, hingga vitamin agar pembukuan panen Kakak rapi.\n\n" +
+            "Berapa ukuran kolam Kakak dan berapa banyak bibit yang sedang dipelihara? Mari kita bantu hitung estimasi biayanya!"
         );
     }
     
+    // 5. JAWABAN LUAR KONTEKS (Out of Context Router)
+    if (CHATBOT_KEYWORDS.outOfContext.some(kw => q_lower.includes(kw)) || q_lower.split(" ").length > 5) {
+        const out_of_context_variations = [
+            "Wah, pertanyaan menarik Kak! 😄\n\n" +
+            "Sebenarnya, Leli adalah asisten khusus budidaya lele. Tapi kalau Kakak penasaran tentang itu, sepemahaman Leli, hal tersebut cukup ramai dibahas banyak orang akhir-akhir ini!\n\n" +
+            "Meskipun Leli ahli di dunia air dan kolam lele, kalau Kakak mau ngobrol santai Leli senang-senang saja. Tapi jangan lupa pantau kolam lelenya juga ya Kak! Ada kendala apa di kolam lele Kakak hari ini?",
+            
+            "Hehe, seru juga nih pertanyaannya Kak! 😆 Tapi sebagai asisten budidaya lele, Leli lebih mengerti tentang air kolam, bibit unggul, dan penyakit lele.\n\n" +
+            "Bagaimana kalau kita kembali membahas cara merawat lele agar cepat panen dan sehat walafiat? Kolam lele Kakak saat ini aman-aman saja kan?"
+        ];
+        return choose(out_of_context_variations);
+    }
+    
     // 6. DEFAULT RESPOND
-    return (
+    const default_variations = [
         "Halo Kak! Aku Leli, asisten AI budidaya ikan lele. 😊\n\n" +
         "Ada yang bisa Leli bantu untuk kolam lele Kakak hari ini? Kakak bisa tanya soal:\n" +
         "• **Penyakit lele** (seperti Malnutrisi, Jamur, Overfeeding, atau Aeromonas)\n" +
         "• **Manajemen Air & Pakan**\n" +
-        "• **Cara Tebar Bibit & Panen**"
-    );
+        "• **Cara Tebar Bibit & Panen**",
+        
+        "Hai Kak! Leli di sini untuk membantu Anda mengelola peternakan lele. 🐟✨\n\n" +
+        "Silakan ajukan pertanyaan seputar:\n" +
+        "• Berapa porsi pakan yang tepat?\n" +
+        "• Cara mengobati jamur air?\n" +
+        "• Prosedur fermentasi EM4?\n" +
+        "Tuliskan pertanyaan Kakak di bawah ya!"
+    ];
+    return choose(default_variations);
 }
 
 function scrollChatToBottom() {
