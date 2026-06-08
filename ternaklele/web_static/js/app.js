@@ -255,29 +255,31 @@ function updateSidebarUI(isAuthenticated) {
    AUTHENTICATION SIMULATION
    ───────────────────────────────────────────────────────────────────────── */
 function setupAuthForms() {
-    const loginForm = document.getElementById("login-form");
-    const registerForm = document.getElementById("register-form");
-    const toggleToRegister = document.getElementById("toggle-to-register");
-    const toggleToLogin = document.getElementById("toggle-to-login");
-    const registerCard = document.getElementById("register-card");
-    const loginCard = document.getElementById("login-card");
+    const loginForm = document.getElementById("form-login");
+    const registerForm = document.getElementById("form-register");
+    const tabLogin = document.getElementById("tab-login");
+    const tabRegister = document.getElementById("tab-register");
     
-    toggleToRegister.addEventListener("click", (e) => {
+    tabRegister.addEventListener("click", (e) => {
         e.preventDefault();
-        loginCard.style.display = "none";
-        registerCard.style.display = "block";
+        loginForm.style.display = "none";
+        registerForm.style.display = "block";
+        tabRegister.classList.add("active");
+        tabLogin.classList.remove("active");
     });
     
-    toggleToLogin.addEventListener("click", (e) => {
+    tabLogin.addEventListener("click", (e) => {
         e.preventDefault();
-        registerCard.style.display = "none";
-        loginCard.style.display = "block";
+        registerForm.style.display = "none";
+        loginForm.style.display = "block";
+        tabLogin.classList.add("active");
+        tabRegister.classList.remove("active");
     });
     
     loginForm.addEventListener("submit", (e) => {
         e.preventDefault();
-        const username = loginForm.username.value.trim();
-        const password = loginForm.password.value;
+        const username = document.getElementById("login-username").value.trim();
+        const password = document.getElementById("login-password").value;
         
         if (!username || !password) {
             showToast("Harap isi semua kolom.", "error");
@@ -300,19 +302,18 @@ function setupAuthForms() {
     
     registerForm.addEventListener("submit", (e) => {
         e.preventDefault();
-        const username = registerForm.username.value.trim();
-        const name = registerForm.name.value.trim();
-        const email = registerForm.email.value.trim();
-        const password = registerForm.password.value;
+        const username = document.getElementById("reg-username").value.trim();
+        const email = document.getElementById("reg-email").value.trim();
+        const password = document.getElementById("reg-password").value;
         
-        if (!username || !name || !email || !password) {
+        if (!username || !email || !password) {
             showToast("Semua kolom harus diisi.", "error");
             return;
         }
         
         const mockUser = {
             username: username,
-            name: name,
+            name: username.charAt(0).toUpperCase() + username.slice(1),
             email: email,
             is_pakar: username.toLowerCase().includes("pakar")
         };
@@ -348,54 +349,32 @@ function logout() {
    DASHBOARD SIMULATION
    ───────────────────────────────────────────────────────────────────────── */
 function loadDashboardData() {
+    // Update welcome name
+    const welcomeEl = document.getElementById("welcome-name");
+    if (welcomeEl && state.user) {
+        welcomeEl.innerText = state.user.name || state.user.username;
+    }
+    
     // Total Detections
-    document.getElementById("stat-total-deteksi").innerText = state.history.length;
+    const statTotal = document.getElementById("stat-total");
+    if (statTotal) statTotal.innerText = state.history.length;
     
     // Healthy count vs sick
     const sehatCount = state.history.filter(h => h.penyakit_terdeteksi === "Sehat").length;
     const sakitCount = state.history.length - sehatCount;
-    document.getElementById("stat-lele-sakit").innerText = sakitCount;
     
-    // Recent detections container
-    const container = document.getElementById("recent-detections-list");
-    container.innerHTML = "";
+    const statSehat = document.getElementById("stat-sehat");
+    if (statSehat) statSehat.innerText = sehatCount;
     
-    if (state.history.length === 0) {
-        container.innerHTML = `<p style="font-size: 13px; color: var(--text-muted); text-align: center; grid-column: 1/-1;">Belum ada deteksi. Unggah foto lele Anda pada menu Deteksi AI.</p>`;
-        return;
-    }
-    
-    // Show last 3
-    const recent = [...state.history].reverse().slice(0, 3);
-    recent.forEach(log => {
-        const item = document.createElement("div");
-        item.className = "glass-card";
-        item.style.padding = "16px";
-        item.style.display = "flex";
-        item.style.alignItems = "center";
-        item.style.gap = "16px";
-        
-        const isSehat = log.penyakit_terdeteksi === "Sehat";
-        const badgeClass = isSehat ? "badge-sehat" : "badge-sakit";
-        const badgeLabel = isSehat ? "Sehat" : log.penyakit_terdeteksi;
-        
-        item.innerHTML = `
-            <img src="${log.image}" style="width: 50px; height: 50px; border-radius: 8px; object-fit: cover;">
-            <div style="flex: 1;">
-                <h4 style="margin-bottom: 4px;">Deteksi #${log.id}</h4>
-                <div style="font-size:12px; color:var(--text-muted);">${new Date(log.created_at).toLocaleDateString("id-ID")}</div>
-            </div>
-            <span class="result-badge ${badgeClass}">${badgeLabel}</span>
-        `;
-        container.appendChild(item);
-    });
+    const statSakit = document.getElementById("stat-sakit");
+    if (statSakit) statSakit.innerText = sakitCount;
 }
 
 /* ─────────────────────────────────────────────────────────────────────────
    AI CAMERA & DETECTION SIMULATION (OFFLINE MOCK CLASSIFIER)
    ───────────────────────────────────────────────────────────────────────── */
 function setupUpload() {
-    const dragArea = document.getElementById("drag-area");
+    const dragArea = document.getElementById("upload-dropzone");
     const fileInput = document.getElementById("file-input");
     const previewContainer = document.querySelector(".preview-container");
     const previewImg = document.querySelector(".preview-img");
@@ -1030,6 +1009,13 @@ function showDiseaseDetailModal(d) {
     document.getElementById("modal-disease-cause").innerText = d.penyebab;
     document.getElementById("modal-disease-prevention").innerText = d.pencegahan;
     document.getElementById("modal-disease-treatment").innerText = d.penanganan;
+    
+    // Explicitly restore display values for all sections
+    document.getElementById("modal-disease-symptoms").parentNode.style.display = "block";
+    document.getElementById("modal-disease-cause").parentNode.style.display = "block";
+    document.getElementById("modal-disease-prevention").parentNode.style.display = "block";
+    document.getElementById("modal-disease-treatment").parentNode.style.display = "block";
+    document.getElementById("modal-disease-medicines").parentNode.style.display = "block";
     
     const medContainer = document.getElementById("modal-disease-medicines");
     medContainer.innerHTML = "";

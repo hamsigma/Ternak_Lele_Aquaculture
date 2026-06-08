@@ -908,6 +908,13 @@ function showDiseaseDetailModal(d) {
     document.getElementById("modal-disease-prevention").innerText = d.pencegahan;
     document.getElementById("modal-disease-treatment").innerText = d.penanganan;
     
+    // Explicitly restore display values for all sections
+    document.getElementById("modal-disease-symptoms").parentNode.style.display = "block";
+    document.getElementById("modal-disease-cause").parentNode.style.display = "block";
+    document.getElementById("modal-disease-prevention").parentNode.style.display = "block";
+    document.getElementById("modal-disease-treatment").parentNode.style.display = "block";
+    document.getElementById("modal-disease-medicines").parentNode.style.display = "block";
+    
     // Medicine info
     const medContainer = document.getElementById("modal-disease-medicines");
     medContainer.innerHTML = "";
