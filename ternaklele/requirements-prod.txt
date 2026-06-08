@@ -1,0 +1,3 @@
+# Production requirements (tanpa training dependencies)
+-r requirements.txt
+# Exclude: kaggle, scikit-learn, albumentations

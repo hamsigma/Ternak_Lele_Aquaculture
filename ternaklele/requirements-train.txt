@@ -1,0 +1,9 @@
+# Training-only requirements
+torch==2.3.1
+torchvision==0.18.1
+timm==1.0.9
+opencv-python-headless==4.10.0.84
+Pillow==10.4.0
+kaggle==1.6.17
+scikit-learn==1.5.2
+albumentations==1.4.18

@@ -1,0 +1,24 @@
+
+=================================================================
+  Ternak Lele AI — Extended Training (Target: >=95% Val Acc)
+  Device  : cpu
+  Dataset : C:\Users\Administrator\Documents\Tenak Lele\ternaklele\dataset\fish_disease
+  Epochs  : 10  |  Batch: 16  |  LR: 0.0005
+  Output  : C:\Users\Administrator\Documents\Tenak Lele\ternaklele\core\ai\models\efficientnet_lele.pth
+=================================================================
+
+[INFO] Total sampel: 1031
+[INFO] Total sampel: 1031
+[INFO] Train: 825 | Val: 206
+
+[INFO] Memuat model EfficientNet-B3...
+[INFO] Load checkpoint dari: C:\Users\Administrator\Documents\Tenak Lele\ternaklele\core\ai\models\efficientnet_lele.pth
+[INFO] 574/574 layers dimuat dari checkpoint.
+[INFO] Model siap di cpu
+
+Epoch    Train Loss   Train Acc    Val Loss     Val Acc      Time       Note
+---------------------------------------------------------------------------
+  1/10   0.9681       75.9         0.6971       94.7         385        [SAVED BEST]
+  2/10   0.6453       90.9         0.5131       97.6         431        [SAVED BEST]
+  3/10   0.5753       94.3         1.5622       96.6         718        
+  4/10   0.5494       95.2         0.4630       98.5         551        [SAVED BEST]

@@ -1,0 +1,71 @@
+{% extends "admin/base.html" %}
+
+{% block title %}{{ title }} | Admin Ternak Lele{% endblock %}
+
+{% block branding %}
+<h1 id="site-name">
+    <a href="{% url 'admin:index' %}">
+        🐟 Ternak Lele <span style="font-size:0.6em; font-weight:normal;">Admin Panel</span>
+    </a>
+</h1>
+{% endblock %}
+
+{% block extrastyle %}
+{{ block.super }}
+<style>
+    :root {
+        --primary: #1a6b3a;
+        --secondary: #2d9e5f;
+        --accent: #f0a500;
+    }
+
+    #header {
+        background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
+        color: #fff;
+    }
+
+    #header a:link, #header a:visited {
+        color: #fff;
+    }
+
+    .module h2, .module caption, .inline-group h2 {
+        background: var(--primary);
+    }
+
+    div.breadcrumbs {
+        background: var(--secondary);
+        color: #fff;
+    }
+
+    div.breadcrumbs a {
+        color: #d4f5e2;
+    }
+
+    .button, input[type=submit], input[type=button], .submit-row input, a.button {
+        background: var(--primary);
+        border-color: var(--primary);
+    }
+
+    .button:hover, input[type=submit]:hover {
+        background: var(--secondary);
+        border-color: var(--secondary);
+    }
+
+    #footer {
+        text-align: center;
+        color: #888;
+        font-size: 0.85em;
+        padding: 10px;
+    }
+
+    .dashboard #content {
+        width: 100%;
+    }
+</style>
+{% endblock %}
+
+{% block footer %}
+<div id="footer">
+    Platform Ternak Lele &mdash; Smart Aquaculture System &copy; 2026
+</div>
+{% endblock %}
