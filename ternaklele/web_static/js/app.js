@@ -597,7 +597,9 @@ function displayDetectionResult(result) {
 }
 
 function startChatAbout(diseaseName) {
+    state.isStartingChatAbout = true;
     showSection("chatbot");
+    startNewChatSession();
     const messageInput = document.getElementById("chat-message-input");
     if (diseaseName === "Sehat") {
         messageInput.value = "Halo Leli, bagaimanakah cara menjaga kualitas air kolam lele agar ikan tetap sehat?";
@@ -605,6 +607,8 @@ function startChatAbout(diseaseName) {
         messageInput.value = `Halo Leli, ikan lele saya baru saja didiagnosis terkena penyakit ${diseaseName.replace("_", " ")}. Bagaimana penanganan darurat yang bisa saya lakukan?`;
     }
     messageInput.focus();
+    sendMessage();
+    state.isStartingChatAbout = false;
 }
 
 /* ─────────────────────────────────────────────────────────────────────────
@@ -655,7 +659,7 @@ function loadChatSessions() {
     });
     
     // Open first session if none is active
-    if (!state.activeSessionId && state.chatSessions.length > 0) {
+    if (!state.activeSessionId && state.chatSessions.length > 0 && !state.isStartingChatAbout) {
         openChatSession(state.chatSessions[0].id);
     }
 }
@@ -820,51 +824,12 @@ function getSimulatedLeliResponse(query) {
     // Helper helper for random selection
     const choose = (arr) => arr[Math.floor(Math.random() * arr.length)];
 
-    // 1. PERKENALAN DIRI (Self-Introduction)
-    if (CHATBOT_KEYWORDS.intro.some(kw => q_lower.includes(kw))) {
-        const intro_variations = [
-            "Halo Kak! Kenalin, aku **Leli** (asisten AI ahli budidaya ikan lele) 🐟✨\n\n" +
-            "Aku diciptakan khusus untuk menemani Kakak dalam merawat kolam lele kesayangan. Kakak bisa tanya-tanya aku tentang:\n" +
-            "• **Diagnosis penyakit lele** (seperti Aeromonas, Jamur, Malnutrisi, atau Overfeeding)\n" +
-            "• **Tips pakan** yang hemat dan bergizi\n" +
-            "• **Menjaga kualitas air** biar lele nggak stres\n" +
-            "• **Persiapan kolam** dari awal tebar sampai panen raya!\n\n" +
-            "Ada yang bisa Leli bantu hari ini biar lele kita sehat dan cepat besar? 😊",
-            
-            "Hai Kak! Aku **Leli**, asisten budidaya lele pintar kamu di sini. 🐟👋\n\n" +
-            "Leli siap bantu Kakak memecahkan masalah kolam, mengoptimalkan pakan, mengenali gejala penyakit lele secara dini, hingga tips sortasi lele agar tidak saling kanibal.\n\n" +
-            "Apa yang ingin Kakak tanyakan hari ini?"
-        ];
-        return choose(intro_variations);
-    }
-    
-    // 2. SAPAAN UMUM (Common Greetings)
-    if (CHATBOT_KEYWORDS.greeting.some(kw => q_lower.trim() === kw || q_lower.startsWith(kw + " "))) {
-        const greeting_variations = [
-            "Halo Kak! Senang banget bisa ketemu. 😊\n\n" +
-            "Semoga hari ini kolam lele Kakak dalam kondisi prima ya! Leli siap bantu jawab pertanyaan seputar budidaya, penyakit lele, pakan, atau kualitas air kolam. Kakak mau diskusi tentang apa hari ini?",
-            
-            "Hai Kak! Senang sekali menyapa Kakak hari ini. Bagaimana kondisi kolam lele Anda? 🐟✨\n\n" +
-            "Ada yang bisa Leli bantu? Tanyakan saja seputar pakan, persiapan kolam, air, atau penyakit lele ya!",
-            
-            "Halo Kak! Leli di sini siap menemani diskusi budidaya lele Anda. Semoga lele Anda tumbuh sehat dan nafsu makan kuat! Ada kendala apa di kolam hari ini? 😊"
-        ];
-        return choose(greeting_variations);
-    }
-    
-    // 3. DETEKSI GEJALA PENYAKIT DETAIL
+    // 1. DETEKSI PENYAKIT DETAIL (Kecuali Sehat)
     for (const d of DISEASES_DB) {
-        if (q_lower.includes(d.nama.toLowerCase())) {
+        if (d.nama !== "Sehat" && q_lower.includes(d.nama.toLowerCase())) {
             let obat_info = "";
             if (d.obat_list && d.obat_list.length > 0) {
                 obat_info = "\n\n**Rekomendasi Obat:**\n" + d.obat_list.map(o => `💊 **${o.nama_obat}** (Dosis: ${o.dosis} | Cara: ${o.cara_penggunaan})`).join("\n");
-            }
-            
-            if (d.nama === "Sehat") {
-                return (
-                    "Alhamdulillah! Senang sekali mendengarnya. Kondisi lele Kakak terpantau **Sehat** walafiat. 🐟💚\n\n" +
-                    "Tetap pertahankan ya Kak! Jangan lupa rutin ganti air kolam sekitar 20-30% setiap minggu, berikan pakan berkualitas secara konsisten, dan selalu jaga kebersihan kolam."
-                );
             }
             
             return (
@@ -878,7 +843,7 @@ function getSimulatedLeliResponse(query) {
         }
     }
     
-    // 4. KATEGORI BUDIDAYA UMUM
+    // 2. KATEGORI BUDIDAYA UMUM
     if (CHATBOT_KEYWORDS.pakan.some(kw => q_lower.includes(kw))) {
         const pakan_variations = [
             "Wah, ngomongin soal pakan lele memang sangat penting Kak! Biar FCR-nya bagus dan cepat panen, ini tips dari Leli:\n\n" +
@@ -984,6 +949,79 @@ function getSimulatedLeliResponse(query) {
             "• **Pakan Alternatif**: Untuk menghemat biaya pakan komersial (pelet pabrik), Kakak bisa selingi dengan pakan alternatif berprotein tinggi seperti maggot BSF, ampas tahu fermentasi, atau ikan rucah rebus.\n" +
             "• **Biaya Bibit & Listrik**: Catat semua pengeluaran dari awal pembelian bibit, biaya listrik aerator/pompa air, hingga vitamin agar pembukuan panen Kakak rapi.\n\n" +
             "Berapa ukuran kolam Kakak dan berapa banyak bibit yang sedang dipelihara? Mari kita bantu hitung estimasi biayanya!"
+        );
+    }
+
+    // 3. KONDISI SEHAT (Sehat / Normal / Baik / Segar)
+    if (CHATBOT_KEYWORDS.sehat.some(kw => q_lower.includes(kw))) {
+        return (
+            "Alhamdulillah! Senang sekali mendengarnya. Kondisi lele Kakak terpantau **Sehat** walafiat. 🐟💚\n\n" +
+            "Tetap pertahaman ya Kak! Jangan lupa rutin ganti air kolam sekitar 20-30% setiap minggu, berikan pakan berkualitas secara konsisten, dan selalu jaga kebersihan kolam."
+        );
+    }
+    
+    // 4. PERKENALAN DIRI (Self-Introduction)
+    if (CHATBOT_KEYWORDS.intro.some(kw => q_lower.includes(kw))) {
+        const intro_variations = [
+            "Halo Kak! Kenalin, aku **Leli** (asisten AI ahli budidaya ikan lele) 🐟✨\n\n" +
+            "Aku diciptakan khusus untuk menemani Kakak dalam merawat kolam lele kesayangan. Kakak bisa tanya-tanya aku tentang:\n" +
+            "• **Diagnosis penyakit lele** (seperti Aeromonas, Jamur, Malnutrisi, atau Overfeeding)\n" +
+            "• **Tips pakan** yang hemat dan bergizi\n" +
+            "• **Menjaga kualitas air** biar lele nggak stres\n" +
+            "• **Persiapan kolam** dari awal tebar sampai panen raya!\n\n" +
+            "Ada yang bisa Leli bantu hari ini biar lele kita sehat dan cepat besar? 😊",
+            
+            "Hai Kak! Aku **Leli**, asisten budidaya lele pintar kamu di sini. 🐟👋\n\n" +
+            "Leli siap bantu Kakak memecahkan masalah kolam, mengoptimalkan pakan, mengenali gejala penyakit lele secara dini, hingga tips sortasi lele agar tidak saling kanibal.\n\n" +
+            "Apa yang ingin Kakak tanyakan hari ini?"
+        ];
+        return choose(intro_variations);
+    }
+    
+    // 5. SAPAAN UMUM (Common Greetings)
+    if (CHATBOT_KEYWORDS.greeting.some(kw => q_lower.trim() === kw || q_lower.startsWith(kw + " "))) {
+        const greeting_variations = [
+            "Halo Kak! Senang banget bisa ketemu. 😊\n\n" +
+            "Semoga hari ini kolam lele Kakak dalam kondisi prima ya! Leli siap bantu jawab pertanyaan seputar budidaya, penyakit lele, pakan, atau kualitas air kolam. Kakak mau diskusi tentang apa hari ini?",
+            
+            "Hai Kak! Senang sekali menyapa Kakak hari ini. Bagaimana kondisi kolam lele Anda? 🐟✨\n\n" +
+            "Ada yang bisa Leli bantu? Tanyakan saja seputar pakan, persiapan kolam, air, atau penyakit lele ya!",
+            
+            "Halo Kak! Leli di sini siap menemani diskusi budidaya lele Anda. Semoga lele Anda tumbuh sehat dan nafsu makan kuat! Ada kendala apa di kolam hari ini? 😊"
+        ];
+        return choose(greeting_variations);
+    }
+    
+    // 6. JAWABAN LUAR KONTEKS (Out of Context Router)
+    if (CHATBOT_KEYWORDS.outOfContext.some(kw => q_lower.includes(kw)) || q_lower.split(" ").length > 5) {
+        const out_of_context_variations = [
+            "Wah, pertanyaan menarik Kak! 😄\n\n" +
+            "Sebenarnya, Leli adalah asisten khusus budidaya lele. Tapi kalau Kakak penasaran tentang itu, sepemahaman Leli, hal tersebut cukup ramai dibahas banyak orang akhir-akhir ini!\n\n" +
+            "Meskipun Leli ahli di dunia air dan kolam lele, kalau Kakak mau ngobrol santai Leli senang-senang saja. Tapi jangan lupa pantau kolam lelenya juga ya Kak! Ada kendala apa di kolam lele Kakak hari ini?",
+            
+            "Hehe, seru juga nih pertanyaannya Kak! 😆 Tapi sebagai asisten budidaya lele, Leli lebih mengerti tentang air kolam, bibit unggul, dan penyakit lele.\n\n" +
+            "Bagaimana kalau kita kembali membahas cara merawat lele agar cepat panen dan sehat walafiat? Kolam lele Kakak saat ini aman-aman saja kan?"
+        ];
+        return choose(out_of_context_variations);
+    }
+    
+    // 7. DEFAULT RESPOND
+    const default_variations = [
+        "Halo Kak! Aku Leli, asisten AI budidaya ikan lele. 😊\n\n" +
+        "Ada yang bisa Leli bantu untuk kolam lele Kakak hari ini? Kakak bisa tanya soal:\n" +
+        "• **Penyakit lele** (seperti Malnutrisi, Jamur, Overfeeding, atau Aeromonas)\n" +
+        "• **Manajemen Air & Pakan**\n" +
+        "• **Cara Tebar Bibit & Panen**",
+        
+        "Hai Kak! Leli di sini untuk membantu Anda mengelola peternakan lele. 🐟✨\n\n" +
+        "Silakan ajukan pertanyaan seputar:\n" +
+        "• Berapa porsi pakan yang tepat?\n" +
+        "• Cara mengobati jamur air?\n" +
+        "• Prosedur fermentasi EM4?\n" +
+        "Tuliskan pertanyaan Kakak di bawah ya!"
+    ];
+    return choose(default_variations);
+}g estimasi biayanya!"
         );
     }
     

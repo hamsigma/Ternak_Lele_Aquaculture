@@ -135,47 +135,16 @@ def _build_smart_response(query: str, knowledge_context: str) -> str:
     """
     q_lower = query.lower()
 
-    # 1. PERKENALAN DIRI (Self-Introduction)
-    intro_keywords = ["siapa kamu", "siapa leli", "kenalan", "nama kamu", "kamu siapa", "leli itu siapa", "leli siapa"]
-    if any(kw in q_lower for kw in intro_keywords):
-        intro_variations = [
-            "Halo Kak! Kenalin, aku **Leli** (asisten AI ahli budidaya ikan lele) 🐟✨\n\n"
-            "Aku diciptakan khusus untuk menemani Kakak dalam merawat kolam lele kesayangan. Kakak bisa tanya-tanya aku tentang:\n"
-            "• **Diagnosis penyakit lele** (seperti Aeromonas, Jamur, Malnutrisi, atau Overfeeding)\n"
-            "• **Tips pakan** yang hemat dan bergizi\n"
-            "• **Menjaga kualitas air** biar lele nggak stres\n"
-            "• **Persiapan kolam** dari awal tebar sampai panen raya!\n\n"
-            "Ada yang bisa Leli bantu hari ini biar lele kita sehat dan cepat besar? 😊",
-            
-            "Hai Kak! Aku **Leli**, asisten budidaya lele pintar kamu di sini. 🐟👋\n\n"
-            "Leli siap bantu Kakak memecahkan masalah kolam, mengoptimalkan pakan, mengenali gejala penyakit lele secara dini, hingga tips sortasi lele agar tidak saling kanibal.\n\n"
-            "Apa yang ingin Kakak tanyakan hari ini?"
-        ]
-        return random.choice(intro_variations)
-
-    # 2. SAPAAN UMUM (Common Greetings)
-    greetings = ["halo", "hai", "selamat pagi", "selamat siang", "selamat sore", "selamat malam", "assalamualaikum", "p", "permisi", "apa kabar"]
-    if q_lower.strip() in greetings or any(q_lower.strip() == g for g in greetings):
-        greeting_variations = [
-            "Halo Kak! Senang banget bisa ketemu. 😊\n\n"
-            "Semoga hari ini kolam lele Kakak dalam kondisi prima ya! Leli siap bantu jawab pertanyaan seputar budidaya, penyakit lele, pakan, atau kualitas air kolam. Kakak mau diskusi tentang apa hari ini?",
-            
-            "Hai Kak! Senang sekali menyapa Kakak hari ini. Bagaimana kondisi kolam lele Anda? 🐟✨\n\n"
-            "Ada yang bisa Leli bantu? Tanyakan saja seputar pakan, persiapan kolam, air, atau penyakit lele ya!",
-            
-            "Halo Kak! Leli di sini siap menemani diskusi budidaya lele Anda. Semoga lele Anda tumbuh sehat dan nafsu makan kuat! Ada kendala apa di kolam hari ini? 😊"
-        ]
-        return random.choice(greeting_variations)
-
-    # 3. DETEKSI PENYAKIT DARI DATABASE DENGAN PENJELASAN ALAMI
+    # 1. DETEKSI PENYAKIT DETAIL (Kecuali Sehat)
     penyakit_match = None
     from apps.knowledge.models import Penyakit
     all_penyakit = Penyakit.objects.prefetch_related("obat_list").all()
 
     for p in all_penyakit:
-        if p.nama.lower().replace("_", " ") in q_lower or p.nama.lower() in q_lower:
-            penyakit_match = p
-            break
+        if p.nama.lower() != "sehat":
+            if p.nama.lower().replace("_", " ") in q_lower or p.nama.lower() in q_lower:
+                penyakit_match = p
+                break
 
     if penyakit_match:
         p = penyakit_match
@@ -187,12 +156,6 @@ def _build_smart_response(query: str, knowledge_context: str) -> str:
             obat_info = "\n\n**Rekomendasi Obat:**\n" + "\n".join(obat_texts)
 
         nama_tampil = p.nama.replace('_', ' ')
-        if nama_tampil == "Sehat":
-            return (
-                "Alhamdulillah! Senang sekali mendengarnya. Kondisi lele Kakak terpantau **Sehat** walafiat. 🐟💚\n\n"
-                "Tetap pertahankan ya Kak! Jangan lupa rutin ganti air kolam sekitar 20-30% setiap minggu, berikan pakan berkualitas secara konsisten, dan selalu jaga kebersihan kolam."
-            )
-
         return (
             f"Oh ya Kak, terkait penyakit **{nama_tampil}** ({p.nama_ilmiah or 'kondisi klinis'}), berikut Leli jelaskan detailnya:\n\n"
             f"⚠️ **Gejala yang Terlihat:**\n{p.gejala}\n\n"
@@ -203,7 +166,7 @@ def _build_smart_response(query: str, knowledge_context: str) -> str:
             f"Saran Leli, segera pisahkan (isolasi) lele yang sakit ke wadah karantina ya Kak agar tidak menular ke lele sehat lainnya!"
         )
 
-    # 4. KATEGORI BUDIDAYA UMUM (Conversational & Natural)
+    # 2. KATEGORI BUDIDAYA UMUM (Conversational & Natural)
     for category, keywords in GENERAL_KEYWORDS.items():
         if any(kw in q_lower for kw in keywords):
             if category == "pakan":
@@ -299,7 +262,47 @@ def _build_smart_response(query: str, knowledge_context: str) -> str:
                     "Berapa ukuran kolam Kakak dan berapa banyak bibit yang sedang dipelihara? Mari kita bantu hitung estimasi biayanya!"
                 )
 
-    # 5. JIKA ADA KONTEKS KNOWLEDGE RELEVAN DARI DATABASE
+    # 3. KONDISI SEHAT (Sehat / Normal / Baik / Segar)
+    sehat_keywords = PENYAKIT_KEYWORDS.get("sehat", ["sehat", "normal", "baik", "segar"])
+    if any(sw in q_lower for sw in sehat_keywords):
+        return (
+            "Alhamdulillah! Senang sekali mendengarnya. Kondisi lele Kakak terpantau **Sehat** walafiat. 🐟💚\n\n"
+            "Tetap pertahankan ya Kak! Jangan lupa rutin ganti air kolam sekitar 20-30% setiap minggu, berikan pakan berkualitas secara konsisten, dan selalu jaga kebersihan kolam."
+        )
+
+    # 4. PERKENALAN DIRI (Self-Introduction)
+    intro_keywords = ["siapa kamu", "siapa leli", "kenalan", "nama kamu", "kamu siapa", "leli itu siapa", "leli siapa"]
+    if any(kw in q_lower for kw in intro_keywords):
+        intro_variations = [
+            "Halo Kak! Kenalin, aku **Leli** (asisten AI ahli budidaya ikan lele) 🐟✨\n\n"
+            "Aku diciptakan khusus untuk menemani Kakak dalam merawat kolam lele kesayangan. Kakak bisa tanya-tanya aku tentang:\n"
+            "• **Diagnosis penyakit lele** (seperti Aeromonas, Jamur, Malnutrisi, atau Overfeeding)\n"
+            "• **Tips pakan** yang hemat dan bergizi\n"
+            "• **Menjaga kualitas air** biar lele nggak stres\n"
+            "• **Persiapan kolam** dari awal tebar sampai panen raya!\n\n"
+            "Ada yang bisa Leli bantu hari ini biar lele kita sehat dan cepat besar? 😊",
+            
+            "Hai Kak! Aku **Leli**, asisten budidaya lele pintar kamu di sini. 🐟👋\n\n"
+            "Leli siap bantu Kakak memecahkan masalah kolam, mengoptimalkan pakan, mengenali gejala penyakit lele secara dini, hingga tips sortasi lele agar tidak saling kanibal.\n\n"
+            "Apa yang ingin Kakak tanyakan hari ini?"
+        ]
+        return random.choice(intro_variations)
+
+    # 5. SAPAAN UMUM (Common Greetings)
+    greetings = ["halo", "hai", "selamat pagi", "selamat siang", "selamat sore", "selamat malam", "assalamualaikum", "p", "permisi", "apa kabar"]
+    if q_lower.strip() in greetings or any(q_lower.strip() == g for g in greetings) or any(q_lower.startswith(g + " ") for g in greetings):
+        greeting_variations = [
+            "Halo Kak! Senang banget bisa ketemu. 😊\n\n"
+            "Semoga hari ini kolam lele Kakak dalam kondisi prima ya! Leli siap bantu jawab pertanyaan seputar budidaya, penyakit lele, pakan, atau kualitas air kolam. Kakak mau diskusi tentang apa hari ini?",
+            
+            "Hai Kak! Senang sekali menyapa Kakak hari ini. Bagaimana kondisi kolam lele Anda? 🐟✨\n\n"
+            "Ada yang bisa Leli bantu? Tanyakan saja seputar pakan, persiapan kolam, air, atau penyakit lele ya!",
+            
+            "Halo Kak! Leli di sini siap menemani diskusi budidaya lele Anda. Semoga lele Anda tumbuh sehat dan nafsu makan kuat! Ada kendala apa di kolam hari ini? 😊"
+        ]
+        return random.choice(greeting_variations)
+
+    # 6. JIKA ADA KONTEKS KNOWLEDGE RELEVAN DARI DATABASE
     if knowledge_context.strip():
         # Bersihkan format tag database agar enak dibaca
         clean_context = knowledge_context.replace("[Penyakit:", "📌 **Penyakit ").replace("[Artikel:", "📖 **Artikel ")
@@ -309,7 +312,7 @@ def _build_smart_response(query: str, knowledge_context: str) -> str:
             + "\n\n---\n*Semoga informasi di atas membantu Kakak ya! Jika masih ragu, Kakak bisa menggunakan fitur Validasi Pakar di menu platform.*"
         )
 
-    # 6. JAWABAN LUAR KONTEKS (Out of Context - Pintar & Menghibur)
+    # 7. JAWABAN LUAR KONTEKS (Out of Context - Pintar & Menghibur)
     out_of_context_responses = [
         "siapa presiden", "cuaca", "berita", "politik", "rendang", "masak", 
         "sejarah", "games", "game", "main", "lagu", "musik", "film", "saham",
@@ -326,7 +329,7 @@ def _build_smart_response(query: str, knowledge_context: str) -> str:
         ]
         return random.choice(out_of_context_variations)
 
-    # 7. RESPONS DEFAULT SANTAI
+    # 8. RESPONS DEFAULT SANTAI
     default_variations = [
         "Halo Kak! Aku Leli, asisten AI budidaya ikan lele. 😊\n\n"
         "Ada yang bisa Leli bantu untuk kolam lele Kakak hari ini? Kakak bisa tanya soal:\n"

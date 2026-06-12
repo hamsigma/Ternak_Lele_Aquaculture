@@ -528,7 +528,9 @@ function displayDetectionResult(result) {
 }
 
 function startChatAbout(diseaseName) {
+    state.isStartingChatAbout = true;
     showSection("chatbot");
+    startNewChatSession();
     const messageInput = document.getElementById("chat-message-input");
     if (diseaseName === "Sehat") {
         messageInput.value = "Halo Leli, bagaimanakah cara menjaga kualitas air kolam lele agar ikan tetap sehat?";
@@ -536,6 +538,9 @@ function startChatAbout(diseaseName) {
         messageInput.value = `Halo Leli, ikan lele saya baru saja didiagnosis terkena penyakit ${diseaseName.replace("_", " ")}. Bagaimana penanganan darurat yang bisa saya lakukan?`;
     }
     messageInput.focus();
+    sendMessage().finally(() => {
+        state.isStartingChatAbout = false;
+    });
 }
 
 /* ─────────────────────────────────────────────────────────────────────────
@@ -598,7 +603,7 @@ async function loadChatSessions() {
             });
             
             // Open first session if none is active
-            if (!state.activeSessionId && sessions.length > 0) {
+            if (!state.activeSessionId && sessions.length > 0 && !state.isStartingChatAbout) {
                 openChatSession(sessions[0].id);
             }
         }

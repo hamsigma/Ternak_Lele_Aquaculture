@@ -40,9 +40,14 @@ class LeleClassifier:
             
             # Batasi thread PyTorch di CPU untuk mencegah CPU starvation pada Django server
             if self.device.type == "cpu":
-                torch.set_num_threads(1)
-                torch.set_interop_op_num_threads(1)
-                logger.info("Optimasi CPU PyTorch aktif: membatasi thread menjadi 1 untuk kestabilan web server.")
+                try:
+                    if hasattr(torch, 'set_num_threads'):
+                        torch.set_num_threads(1)
+                    if hasattr(torch, 'set_interop_op_num_threads'):
+                        torch.set_interop_op_num_threads(1)
+                    logger.info("Optimasi CPU PyTorch aktif: membatasi thread menjadi 1 untuk kestabilan web server.")
+                except Exception as thread_err:
+                    logger.warning(f"Gagal mengatur opsi optimasi CPU thread: {thread_err}")
 
             num_classes = len(self.class_labels)
 
