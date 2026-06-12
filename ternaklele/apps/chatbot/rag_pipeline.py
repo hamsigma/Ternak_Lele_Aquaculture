@@ -135,17 +135,26 @@ def _build_smart_response(query: str, knowledge_context: str) -> str:
     """
     q_lower = query.lower()
 
-    # 1. DETEKSI PENYAKIT DETAIL (Kecuali Sehat)
+    # ─── PRIORITAS TERTINGGI: DETEKSI PENYAKIT ──────────────────────────────
+    # Layer 1: Cek keyword penyakit dari PENYAKIT_KEYWORDS (in-memory, sangat cepat)
+    detected_by_keyword = False
+    for cat, kws in PENYAKIT_KEYWORDS.items():
+        if cat != "sehat" and any(kw in q_lower for kw in kws):
+            detected_by_keyword = True
+            break
+
+    # Layer 2: Cek nama penyakit persis dari database
     penyakit_match = None
     from apps.knowledge.models import Penyakit
     all_penyakit = Penyakit.objects.prefetch_related("obat_list").all()
 
     for p in all_penyakit:
         if p.nama.lower() != "sehat":
-            if p.nama.lower().replace("_", " ") in q_lower or p.nama.lower() in q_lower:
+            if p.nama.lower() in q_lower or p.nama.lower().replace("_", " ") in q_lower:
                 penyakit_match = p
                 break
 
+    # Jika terdeteksi penyakit dari DB → langsung kembalikan panduan penanganan
     if penyakit_match:
         p = penyakit_match
         obat_info = ""
@@ -164,6 +173,15 @@ def _build_smart_response(query: str, knowledge_context: str) -> str:
             f"🛡️ **Cara Pencegahan:**\n{p.pencegahan}"
             f"{obat_info}\n\n"
             f"Saran Leli, segera pisahkan (isolasi) lele yang sakit ke wadah karantina ya Kak agar tidak menular ke lele sehat lainnya!"
+        )
+
+    # Jika terdeteksi lewat keyword tapi tidak ada di DB → gunakan knowledge context
+    if detected_by_keyword and knowledge_context.strip():
+        clean_context = knowledge_context.replace("[Penyakit:", "📌 **Penyakit ").replace("[Artikel:", "📖 **Artikel ")
+        return (
+            "Berdasarkan catatan panduan Ternak Lele yang Leli temukan:\n\n"
+            + clean_context
+            + "\n\n---\n*Semoga informasi di atas membantu Kakak ya! Jika masih ragu, gunakan fitur Validasi Pakar.*"
         )
 
     # 2. KATEGORI BUDIDAYA UMUM (Conversational & Natural)
@@ -263,8 +281,11 @@ def _build_smart_response(query: str, knowledge_context: str) -> str:
                 )
 
     # 3. KONDISI SEHAT (Sehat / Normal / Baik / Segar)
+    # Hanya aktif jika tidak ada nama penyakit spesifik di pesan
+    all_disease_keywords = [kw for cat, kws in PENYAKIT_KEYWORDS.items() if cat != "sehat" for kw in kws]
+    has_disease_in_query = any(kw in q_lower for kw in all_disease_keywords)
     sehat_keywords = PENYAKIT_KEYWORDS.get("sehat", ["sehat", "normal", "baik", "segar"])
-    if any(sw in q_lower for sw in sehat_keywords):
+    if not has_disease_in_query and any(sw in q_lower for sw in sehat_keywords):
         return (
             "Alhamdulillah! Senang sekali mendengarnya. Kondisi lele Kakak terpantau **Sehat** walafiat. 🐟💚\n\n"
             "Tetap pertahankan ya Kak! Jangan lupa rutin ganti air kolam sekitar 20-30% setiap minggu, berikan pakan berkualitas secara konsisten, dan selalu jaga kebersihan kolam."
@@ -289,8 +310,19 @@ def _build_smart_response(query: str, knowledge_context: str) -> str:
         return random.choice(intro_variations)
 
     # 5. SAPAAN UMUM (Common Greetings)
-    greetings = ["halo", "hai", "selamat pagi", "selamat siang", "selamat sore", "selamat malam", "assalamualaikum", "p", "permisi", "apa kabar"]
-    if q_lower.strip() in greetings or any(q_lower.strip() == g for g in greetings) or any(q_lower.startswith(g + " ") for g in greetings):
+    # Hanya aktif jika pesan TIDAK mengandung keyword penyakit/budidaya
+    # dan merupakan pesan pendek (kurang dari 10 kata)
+    all_topic_keywords = all_disease_keywords + [
+        kw for kws in GENERAL_KEYWORDS.values() for kw in kws
+    ]
+    has_topic = any(kw in q_lower for kw in all_topic_keywords)
+    greetings = ["halo", "hai", "selamat pagi", "selamat siang", "selamat sore", "selamat malam", "assalamualaikum", "permisi", "apa kabar"]
+    is_pure_greeting = (
+        q_lower.strip() in greetings
+        or any(q_lower.strip() == g for g in greetings)
+        or (any(q_lower.startswith(g + " ") for g in greetings) and len(q_lower.split()) < 10)
+    )
+    if is_pure_greeting and not has_topic:
         greeting_variations = [
             "Halo Kak! Senang banget bisa ketemu. 😊\n\n"
             "Semoga hari ini kolam lele Kakak dalam kondisi prima ya! Leli siap bantu jawab pertanyaan seputar budidaya, penyakit lele, pakan, atau kualitas air kolam. Kakak mau diskusi tentang apa hari ini?",
@@ -312,18 +344,19 @@ def _build_smart_response(query: str, knowledge_context: str) -> str:
             + "\n\n---\n*Semoga informasi di atas membantu Kakak ya! Jika masih ragu, Kakak bisa menggunakan fitur Validasi Pakar di menu platform.*"
         )
 
-    # 7. JAWABAN LUAR KONTEKS (Out of Context - Pintar & Menghibur)
-    out_of_context_responses = [
-        "siapa presiden", "cuaca", "berita", "politik", "rendang", "masak", 
+    # 7. JAWABAN LUAR KONTEKS (Out of Context)
+    # HANYA aktif jika mengandung keyword luar konteks DAN tidak ada topik budidaya
+    out_of_context_keywords = [
+        "siapa presiden", "cuaca", "berita", "politik", "rendang", "masak",
         "sejarah", "games", "game", "main", "lagu", "musik", "film", "saham",
-        "crypto", "belanja", "harga", "uang", "pacar", "cinta"
+        "crypto", "belanja", "pacar", "cinta"
     ]
-    if any(ow in q_lower for ow in out_of_context_responses) or len(q_lower.split()) > 4:
+    if any(ow in q_lower for ow in out_of_context_keywords) and not has_topic:
         out_of_context_variations = [
             "Wah, pertanyaan menarik Kak! 😄\n\n"
             "Sebenarnya, Leli adalah asisten khusus budidaya lele. Tapi kalau Kakak penasaran tentang itu, sepemahaman Leli, hal tersebut cukup ramai dibahas banyak orang akhir-akhir ini!\n\n"
             "Meskipun Leli ahli di dunia air dan kolam lele, kalau Kakak mau ngobrol santai Leli senang-senang saja. Tapi jangan lupa pantau kolam lelenya juga ya Kak! Ada kendala apa di kolam lele Kakak hari ini?",
-            
+
             "Hehe, seru juga nih pertanyaannya Kak! 😆 Tapi sebagai asisten budidaya lele, Leli lebih mengerti tentang air kolam, bibit unggul, dan penyakit lele.\n\n"
             "Bagaimana kalau kita kembali membahas cara merawat lele agar cepat panen dan sehat walafiat? Kolam lele Kakak saat ini aman-aman saja kan?"
         ]

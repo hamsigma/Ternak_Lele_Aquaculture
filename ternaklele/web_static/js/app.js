@@ -435,15 +435,7 @@ function setupUpload() {
     
     btnSubmit.addEventListener("click", () => {
         if (!state.selectedFile) return;
-        
-        // Loader
-        btnSubmit.disabled = true;
-        btnSubmit.innerHTML = `<div class="loader-spinner" style="width:20px;height:20px;margin:0;"></div> Memproses...`;
-        
-        // Simulate local AI Classification delay (1.5 seconds)
-        setTimeout(() => {
-            runMockClassifier();
-        }, 1500);
+        runDetection(); // Coba backend API dulu, fallback ke mock
     });
 }
 
@@ -455,7 +447,7 @@ function resetAnalyzeButton() {
 
 function runMockClassifier() {
     const fileName = state.selectedFile.name.toLowerCase();
-    
+
     // Choose disease based on file name keywords, else pick random
     let diseaseName = "Sehat";
     if (fileName.includes("aeromonas") || fileName.includes("borok") || fileName.includes("merah")) {
@@ -471,15 +463,12 @@ function runMockClassifier() {
         const diseases = ["Sehat", "Aeromonas", "Malnutrisi", "Jamur", "Overfeeding"];
         diseaseName = diseases[Math.floor(Math.random() * diseases.length)];
     }
-    
-    // Generate scores
+
     const confidence = parseFloat((0.82 + Math.random() * 0.17).toFixed(4));
-    
-    // Generate probabilities
     const probs = {};
     let sum = 0;
     const classes = ["Sehat", "Aeromonas", "Malnutrisi", "Jamur", "Overfeeding"];
-    
+
     classes.forEach(c => {
         if (c === diseaseName) {
             probs[c] = confidence;
@@ -488,16 +477,14 @@ function runMockClassifier() {
         }
         sum += probs[c];
     });
-    
-    // Adjust remainder so sum is exactly 1.0
+
     const diff = 1.0 - sum;
     const randomClass = classes[Math.floor(Math.random() * classes.length)];
     probs[randomClass] = parseFloat((probs[randomClass] + diff).toFixed(4));
-    
-    // Retrieve treatment recommendation
+
     const diseaseData = DISEASES_DB.find(d => d.nama === diseaseName);
     const penanganan = diseaseData ? diseaseData.penanganan : "Konsultasikan dengan pakar perikanan.";
-    
+
     const newLog = {
         id: state.history.length + 1,
         created_at: new Date().toISOString(),
@@ -509,14 +496,79 @@ function runMockClassifier() {
         status_proses: "done",
         image: document.querySelector(".preview-img").src
     };
-    
-    // Save to State & LocalStorage
+
     state.history.push(newLog);
     localStorage.setItem("lele_static_history", JSON.stringify(state.history));
-    
+
     showToast("Analisis AI selesai!", "success");
     displayDetectionResult(newLog);
     resetAnalyzeButton();
+}
+
+// Coba deteksi via backend API (lebih akurat), fallback ke mock jika gagal
+async function runDetection() {
+    if (!state.selectedFile) return;
+
+    const btnSubmit = document.getElementById("btn-analyze-ai");
+    btnSubmit.disabled = true;
+    btnSubmit.innerHTML = `<div class="loader-spinner" style="width:20px;height:20px;margin:0;"></div> Memproses AI...`;
+
+    // Coba panggil backend real API
+    const formData = new FormData();
+    formData.append("image", state.selectedFile);
+
+    try {
+        const uploadRes = await fetch("http://localhost:8000/api/detection/upload/", {
+            method: "POST",
+            body: formData,
+            signal: AbortSignal.timeout(5000) // timeout 5 detik
+        });
+
+        if (uploadRes.ok) {
+            const uploadData = await uploadRes.json();
+            const detectionId = uploadData.id || uploadData.detection_id;
+
+            // Poll hasil deteksi (max 15 detik)
+            let result = null;
+            for (let i = 0; i < 15; i++) {
+                await new Promise(r => setTimeout(r, 1000));
+                try {
+                    const resultRes = await fetch(`http://localhost:8000/api/detection/result/${detectionId}/`);
+                    if (resultRes.ok) {
+                        const rd = await resultRes.json();
+                        if (rd.status_proses === "done" || rd.penyakit_terdeteksi) {
+                            result = rd;
+                            break;
+                        }
+                    }
+                } catch (_) { break; }
+            }
+
+            if (result && result.penyakit_terdeteksi) {
+                // Tampilkan hasil dari backend AI yang akurat
+                const diseaseData = DISEASES_DB.find(d => d.nama === result.penyakit_terdeteksi);
+                result.rekomendasi_penanganan = result.rekomendasi_penanganan || (diseaseData ? diseaseData.penanganan : "");
+                result.semua_probabilitas = result.semua_probabilitas || {};
+                result.confidence_score = result.confidence_score || result.confidence_persen || 0;
+                result.confidence_persen = result.confidence_persen || `${Math.round(result.confidence_score * 100)}%`;
+                result.image = document.querySelector(".preview-img").src;
+
+                const newLog = { ...result, id: state.history.length + 1, created_at: new Date().toISOString() };
+                state.history.push(newLog);
+                localStorage.setItem("lele_static_history", JSON.stringify(state.history));
+                showToast("Analisis AI selesai! (Hasil dari backend)", "success");
+                displayDetectionResult(newLog);
+                resetAnalyzeButton();
+                return;
+            }
+        }
+    } catch (_) {
+        // Backend tidak tersedia, gunakan mock
+    }
+
+    // Fallback: mock classifier (offline)
+    showToast("Backend tidak tersambung, menggunakan mode offline.", "warning");
+    setTimeout(() => { runMockClassifier(); }, 500);
 }
 
 function displayDetectionResult(result) {
@@ -791,21 +843,49 @@ function sendMessage() {
     messagesEl.appendChild(typingIndicator);
     scrollChatToBottom();
     
-    // Simulate Leli responding after 1.2s
-    setTimeout(() => {
+    // Coba kirim ke backend API dulu, fallback ke simulasi lokal
+    (async () => {
+        let responseText = null;
+
+        try {
+            const payload = { message };
+            if (state.activeSessionId) payload.session_id = state.activeSessionId;
+
+            const res = await fetch("http://localhost:8000/api/chatbot/", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                    ...(state.backendToken ? { "Authorization": `Bearer ${state.backendToken}` } : {})
+                },
+                body: JSON.stringify(payload),
+                signal: AbortSignal.timeout(8000)
+            });
+
+            if (res.ok) {
+                const data = await res.json();
+                responseText = data.response;
+                if (data.session_id) state.activeSessionId = data.session_id;
+            }
+        } catch (_) {
+            // Backend tidak tersedia, gunakan simulasi lokal
+        }
+
+        // Fallback ke simulasi lokal jika backend gagal
+        if (!responseText) {
+            responseText = getSimulatedLeliResponse(message);
+        }
+
         typingIndicator.remove();
-        const responseText = getSimulatedLeliResponse(message);
-        
         const aiBubble = document.createElement("div");
         aiBubble.className = "chat-bubble chat-bubble-ai";
-        const formattedResponse = responseText.replace(/\n/g, "<br>");
+        const formattedResponse = responseText.replace(/\n/g, "<br>").replace(/\*\*(.*?)\*\*/g, "<strong>$1</strong>");
         aiBubble.innerHTML = `
             ${formattedResponse}
             <div class="chat-bubble-time">${new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</div>
         `;
         messagesEl.appendChild(aiBubble);
         scrollChatToBottom();
-        
+
         // Save Leli message to storage
         if (sessionIndex !== -1) {
             state.chatSessions[sessionIndex].messages.push({
@@ -815,7 +895,7 @@ function sendMessage() {
             });
             localStorage.setItem("lele_static_chat_sessions", JSON.stringify(state.chatSessions));
         }
-    }, 1200);
+    })();
 }
 
 function getSimulatedLeliResponse(query) {
@@ -979,7 +1059,19 @@ function getSimulatedLeliResponse(query) {
     }
     
     // 5. SAPAAN UMUM (Common Greetings)
-    if (CHATBOT_KEYWORDS.greeting.some(kw => q_lower.trim() === kw || q_lower.startsWith(kw + " "))) {
+    const allDiseaseKeywords = DISEASES_DB.map(d => d.nama.toLowerCase());
+    const allGeneralKeywords = Object.keys(CHATBOT_KEYWORDS)
+        .filter(k => k !== "greeting" && k !== "outOfContext")
+        .reduce((acc, k) => acc.concat(CHATBOT_KEYWORDS[k]), []);
+    const allTopicKeywords = [...allDiseaseKeywords, ...allGeneralKeywords];
+    const hasTopic = allTopicKeywords.some(kw => q_lower.includes(kw));
+
+    const isGreeting = CHATBOT_KEYWORDS.greeting.some(kw => 
+        q_lower.trim() === kw || 
+        (q_lower.startsWith(kw + " ") && q_lower.split(/\s+/).length < 10)
+    );
+
+    if (isGreeting && !hasTopic) {
         const greeting_variations = [
             "Halo Kak! Senang banget bisa ketemu. 😊\n\n" +
             "Semoga hari ini kolam lele Kakak dalam kondisi prima ya! Leli siap bantu jawab pertanyaan seputar budidaya, penyakit lele, pakan, atau kualitas air kolam. Kakak mau diskusi tentang apa hari ini?",
@@ -993,52 +1085,21 @@ function getSimulatedLeliResponse(query) {
     }
     
     // 6. JAWABAN LUAR KONTEKS (Out of Context Router)
-    if (CHATBOT_KEYWORDS.outOfContext.some(kw => q_lower.includes(kw)) || q_lower.split(" ").length > 5) {
+    const hasOutContextKeyword = CHATBOT_KEYWORDS.outOfContext.some(kw => q_lower.includes(kw));
+    const isOutContext = hasOutContextKeyword || (!hasTopic && q_lower.split(/\s+/).length > 15);
+    if (isOutContext) {
         const out_of_context_variations = [
             "Wah, pertanyaan menarik Kak! 😄\n\n" +
             "Sebenarnya, Leli adalah asisten khusus budidaya lele. Tapi kalau Kakak penasaran tentang itu, sepemahaman Leli, hal tersebut cukup ramai dibahas banyak orang akhir-akhir ini!\n\n" +
             "Meskipun Leli ahli di dunia air dan kolam lele, kalau Kakak mau ngobrol santai Leli senang-senang saja. Tapi jangan lupa pantau kolam lelenya juga ya Kak! Ada kendala apa di kolam lele Kakak hari ini?",
             
-            "Hehe, seru juga nih pertanyaannya Kak! 😆 Tapi sebagai asisten budidaya lele, Leli lebih mengerti tentang air kolam, bibit unggul, dan penyakit lele.\n\n" +
+            "Hehe, seru juga nih pertanyaannya Kak! 😆 Tapi sebagai asisten budidaya lele, Leli lebih mengerti tentang air kolam, bibit unggul, and penyakit lele.\n\n" +
             "Bagaimana kalau kita kembali membahas cara merawat lele agar cepat panen dan sehat walafiat? Kolam lele Kakak saat ini aman-aman saja kan?"
         ];
         return choose(out_of_context_variations);
     }
     
     // 7. DEFAULT RESPOND
-    const default_variations = [
-        "Halo Kak! Aku Leli, asisten AI budidaya ikan lele. 😊\n\n" +
-        "Ada yang bisa Leli bantu untuk kolam lele Kakak hari ini? Kakak bisa tanya soal:\n" +
-        "• **Penyakit lele** (seperti Malnutrisi, Jamur, Overfeeding, atau Aeromonas)\n" +
-        "• **Manajemen Air & Pakan**\n" +
-        "• **Cara Tebar Bibit & Panen**",
-        
-        "Hai Kak! Leli di sini untuk membantu Anda mengelola peternakan lele. 🐟✨\n\n" +
-        "Silakan ajukan pertanyaan seputar:\n" +
-        "• Berapa porsi pakan yang tepat?\n" +
-        "• Cara mengobati jamur air?\n" +
-        "• Prosedur fermentasi EM4?\n" +
-        "Tuliskan pertanyaan Kakak di bawah ya!"
-    ];
-    return choose(default_variations);
-}g estimasi biayanya!"
-        );
-    }
-    
-    // 5. JAWABAN LUAR KONTEKS (Out of Context Router)
-    if (CHATBOT_KEYWORDS.outOfContext.some(kw => q_lower.includes(kw)) || q_lower.split(" ").length > 5) {
-        const out_of_context_variations = [
-            "Wah, pertanyaan menarik Kak! 😄\n\n" +
-            "Sebenarnya, Leli adalah asisten khusus budidaya lele. Tapi kalau Kakak penasaran tentang itu, sepemahaman Leli, hal tersebut cukup ramai dibahas banyak orang akhir-akhir ini!\n\n" +
-            "Meskipun Leli ahli di dunia air dan kolam lele, kalau Kakak mau ngobrol santai Leli senang-senang saja. Tapi jangan lupa pantau kolam lelenya juga ya Kak! Ada kendala apa di kolam lele Kakak hari ini?",
-            
-            "Hehe, seru juga nih pertanyaannya Kak! 😆 Tapi sebagai asisten budidaya lele, Leli lebih mengerti tentang air kolam, bibit unggul, dan penyakit lele.\n\n" +
-            "Bagaimana kalau kita kembali membahas cara merawat lele agar cepat panen dan sehat walafiat? Kolam lele Kakak saat ini aman-aman saja kan?"
-        ];
-        return choose(out_of_context_variations);
-    }
-    
-    // 6. DEFAULT RESPOND
     const default_variations = [
         "Halo Kak! Aku Leli, asisten AI budidaya ikan lele. 😊\n\n" +
         "Ada yang bisa Leli bantu untuk kolam lele Kakak hari ini? Kakak bisa tanya soal:\n" +

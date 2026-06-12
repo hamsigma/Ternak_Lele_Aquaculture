@@ -25,10 +25,10 @@ import timm
 # ─── Config ─────────────────────────────────────────────────────────────────
 DATA_DIR    = ROOT / "dataset" / "fish_disease"
 OUTPUT_PATH = ROOT / "core" / "ai" / "models" / "efficientnet_lele.pth"
-EPOCHS      = 10      # Cukup untuk konvergensi
+EPOCHS      = 15      # Cukup untuk konvergensi
 BATCH_SIZE  = 16      # Balance antara kecepatan dan memori
 LR          = 5e-4
-INPUT_SIZE  = 224     # Lebih cepat, lalu fine-tune ke 300
+INPUT_SIZE  = 300     # HARUS sama dengan LeleClassifier.INPUT_SIZE = (300, 300)
 
 TARGET_CLASSES = ["Sehat", "Aeromonas", "Malnutrisi", "Jamur", "Overfeeding"]
 NUM_CLASSES    = len(TARGET_CLASSES)
@@ -144,7 +144,12 @@ print(f"[INFO] Train: {len(train_ds)} | Val: {len(val_ds)}\n")
 
 # ─── Model ───────────────────────────────────────────────────────────────────
 print("[INFO] Memuat model EfficientNet-B3...")
-model = timm.create_model("efficientnet_b3", pretrained=False, num_classes=NUM_CLASSES)
+try:
+    model = timm.create_model("efficientnet_b3", pretrained=True, num_classes=NUM_CLASSES)
+    print("[INFO] Transfer learning: ImageNet pre-trained weights berhasil dimuat!")
+except Exception as e:
+    print(f"[WARN] Gagal unduh pre-trained weights ({e}). Fallback ke pretrained=False.")
+    model = timm.create_model("efficientnet_b3", pretrained=False, num_classes=NUM_CLASSES)
 
 if OUTPUT_PATH.exists():
     print(f"[INFO] Load checkpoint dari: {OUTPUT_PATH}")
