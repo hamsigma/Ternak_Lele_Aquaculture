@@ -134,32 +134,67 @@ class LeleClassifier:
         tensor = torch.from_numpy(img.transpose(2, 0, 1)).unsqueeze(0)
         return tensor.to(self.device)
 
+    def _build_color_histogram(self, img):
+        """Hitung L1-normalized BGR color histogram (8 bin per channel = 512 bin total)."""
+        import cv2
+        import numpy as np
+        hist = cv2.calcHist([img], [0, 1, 2], None, [8, 8, 8],
+                            [0, 256, 0, 256, 0, 256])
+        hist = hist.flatten().astype(np.float32)
+        total = hist.sum()
+        if total > 0:
+            hist /= total
+        return hist
+
     def _find_dataset_match(self, image_path: str):
-        """Mencocokkan sidik jari piksel gambar secara cepat dengan gambar di dataset."""
+        """
+        Pencocokan 2-Pass:
+        Pass 1 — Exact pixel match (thumbnail 8x8):
+                  Jika skor > 95%, gambar dikenali sebagai bagian dataset.
+        Pass 2 — Color Histogram Pre-Filter:
+                  Jika warna gambar < 20% mirip dengan warna SEMUA gambar lele
+                  di dataset, maka gambar pasti bukan ikan lele → tolak dini.
+        """
         if not hasattr(self, '_dataset_cache'):
             self._dataset_cache = []
+            self._hist_cache    = []
             try:
                 import cv2
                 import numpy as np
-                # Dapatkan lokasi folder dataset
                 from django.conf import settings
                 dataset_dir = Path(settings.BASE_DIR) / "dataset" / "fish_disease"
+                class_count = {}
                 if dataset_dir.exists():
                     for folder in dataset_dir.iterdir():
-                        if folder.is_dir() and folder.name in self.class_labels:
-                            kelas = folder.name
-                            for ext in ("*.jpg", "*.jpeg", "*.png"):
-                                for img_p in folder.glob(ext):
-                                    try:
-                                        img = cv2.imread(str(img_p))
-                                        if img is not None:
-                                            # Perkecil ke 8x8 piksel untuk komparasi cepat
-                                            img_small = cv2.resize(img, (8, 8))
-                                            self._dataset_cache.append((kelas, img_small))
-                                    except Exception:
+                        if not folder.is_dir():
+                            continue
+                        if folder.name not in self.class_labels:
+                            continue
+                        kelas = folder.name
+                        class_count[kelas] = 0
+                        for ext in ("*.jpg", "*.jpeg", "*.png"):
+                            for img_p in folder.glob(ext):
+                                try:
+                                    img = cv2.imread(str(img_p))
+                                    if img is None:
                                         continue
-            except Exception:
-                pass
+                                    # Thumbnail 8x8 untuk exact match
+                                    img_small = cv2.resize(img, (8, 8))
+                                    self._dataset_cache.append((kelas, img_small))
+                                    # Histogram cache — maks 40 gambar per kelas (200 total)
+                                    if class_count[kelas] < 40:
+                                        self._hist_cache.append(
+                                            self._build_color_histogram(img)
+                                        )
+                                        class_count[kelas] += 1
+                                except Exception:
+                                    continue
+                logger.info(
+                    f"Dataset cache: {len(self._dataset_cache)} gambar thumbnail, "
+                    f"{len(self._hist_cache)} histogram."
+                )
+            except Exception as e:
+                logger.warning(f"Gagal membangun dataset cache: {e}")
 
         if not self._dataset_cache:
             return None, 0.0
@@ -170,22 +205,54 @@ class LeleClassifier:
             target = cv2.imread(image_path)
             if target is None:
                 return None, 0.0
+
             target_small = cv2.resize(target, (8, 8))
-            
+
+            # ── Pass 1: Exact pixel match ──────────────────────────────────
             best_class = None
             best_score = 0.0
-            
             for kelas, ref_img in self._dataset_cache:
-                # Hitung Mean Squared Error
-                err = np.mean((target_small - ref_img) ** 2)
-                sim = 1.0 - (err / 65025.0) # Normalisasi nilai 0 - 1
+                err  = np.mean(
+                    (target_small.astype(np.float32) - ref_img.astype(np.float32)) ** 2
+                )
+                sim = 1.0 - (err / 65025.0)
                 if sim > best_score:
                     best_score = sim
                     best_class = kelas
-            
-            return best_class, best_score
-        except Exception:
+
+            # Gambar persis sama dengan yang ada di dataset
+            if best_score > 0.95:
+                logger.info(f"Exact match: {best_class} (score={round(best_score,3)})")
+                return best_class, best_score
+
+            # ── Pass 2: Color Histogram Pre-Filter ────────────────────────
+            # Hitung seberapa mirip warna gambar dengan gambar-gambar lele di dataset.
+            # Gambar bukan lele (benda, manusia, dll.) akan memiliki distribusi warna
+            # yang sangat berbeda dibandingkan foto ikan lele.
+            if self._hist_cache:
+                target_hist = self._build_color_histogram(target)
+                max_intersection = max(
+                    float(np.minimum(target_hist, ref_hist).sum())
+                    for ref_hist in self._hist_cache
+                )
+                logger.info(
+                    f"Histogram pre-filter: max_intersection={round(max_intersection, 3)}"
+                )
+                # Threshold 0.20 = gambar harus memiliki setidaknya 20% kesamaan warna
+                # dengan foto lele manapun di dataset agar lolos ke model AI.
+                if max_intersection < 0.20:
+                    logger.info(
+                        "Histogram pre-filter REJECTED: warna gambar tidak mirip lele "
+                        f"(max_intersection={round(max_intersection,3)}) → Bukan Lele"
+                    )
+                    return "Bukan Lele", 0.0
+
             return None, 0.0
+
+        except Exception as e:
+            logger.warning(f"Error di _find_dataset_match: {e}")
+            return None, 0.0
+
 
     def predict(self, image_path: str) -> dict:
         """
@@ -195,14 +262,25 @@ class LeleClassifier:
         # 1. Coba pencocokan instan dengan gambar dataset
         try:
             matched_class, score = self._find_dataset_match(image_path)
-            if matched_class and score > 0.95:  # Sangat mirip / identik
+
+            # ── Kasus A: Histogram pre-filter menolak gambar (bukan ikan lele) ──
+            if matched_class == "Bukan Lele":
+                logger.info("Gambar ditolak oleh histogram pre-filter → Bukan Lele")
+                flat_probs = {label: round(1.0 / len(self.class_labels), 4) for label in self.class_labels}
+                return {
+                    "label": "Bukan Lele",
+                    "confidence": 0.0,
+                    "all_probabilities": flat_probs,
+                }
+
+            # ── Kasus B: Exact pixel match dengan gambar di dataset ──
+            if matched_class and score > 0.95:
                 probs_dict = {label: 0.001 for label in self.class_labels}
                 probs_dict[matched_class] = round(float(score), 4)
-                # Normalisasi probabilitas agar jumlahnya tepat 1.0
                 total = sum(probs_dict.values())
                 for k in probs_dict:
                     probs_dict[k] = round(probs_dict[k] / total, 4)
-                
+
                 logger.info(f"Instant Match Berhasil: {matched_class} (Similarity: {round(score*100, 2)}%)")
                 return {
                     "label": matched_class,
@@ -242,9 +320,44 @@ class LeleClassifier:
             }
 
             best_idx = int(probabilities.argmax().item())
+            confidence = float(probabilities[best_idx])
+
+            # ── OOD (Out-of-Domain) Detection ──────────────────────────────
+            # Strategi ganda: threshold kepercayaan + entropi distribusi
+            #
+            # 1. Threshold Confidence: Jika probabilitas kelas terbaik < 85%,
+            #    model ragu → kemungkinan bukan lele.
+            # 2. Entropy Filter: Jika distribusi terlalu merata (semua kelas
+            #    mendapat nilai serupa), model bingung → bukan lele.
+            #    Entropi maksimal untuk 5 kelas = -5*(0.2*log(0.2)) ≈ 1.609
+            #    Kita tolak jika entropy > 0.9 (distribusi terlalu seragam)
+            import math
+            entropy = -sum(
+                float(p) * math.log(float(p) + 1e-9)
+                for p in probabilities
+            )
+            # Normalisasi entropy ke rentang [0, 1]
+            max_entropy = math.log(len(self.class_labels))
+            normalized_entropy = entropy / max_entropy if max_entropy > 0 else 0
+
+            is_low_confidence = confidence < 0.85
+            is_high_entropy    = normalized_entropy > 0.55  # Distribusi terlalu merata
+
+            if is_low_confidence or is_high_entropy:
+                logger.info(
+                    f"OOD Detected: confidence={round(confidence*100,1)}% "
+                    f"entropy={round(normalized_entropy,3)} "
+                    f"→ Diklasifikasikan sebagai 'Bukan Lele'."
+                )
+                return {
+                    "label": "Bukan Lele",
+                    "confidence": confidence,
+                    "all_probabilities": probs_dict,
+                }
+
             return {
                 "label": self.class_labels[best_idx],
-                "confidence": float(probabilities[best_idx]),
+                "confidence": confidence,
                 "all_probabilities": probs_dict,
             }
 

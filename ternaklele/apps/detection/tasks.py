@@ -32,11 +32,20 @@ def run_detection(self, detection_log_id: int):
         log.status_proses = DetectionLog.Status.DONE
 
         # Ambil rekomendasi dari database knowledge
-        try:
-            penyakit = Penyakit.objects.get(nama__iexact=penyakit_nama)
-            log.rekomendasi_penanganan = penyakit.penanganan
-        except Penyakit.DoesNotExist:
-            log.rekomendasi_penanganan = "Konsultasikan dengan pakar perikanan untuk penanganan lebih lanjut."
+        if penyakit_nama == "Bukan Lele":
+            # Gambar tidak dikenali sebagai ikan lele
+            log.rekomendasi_penanganan = (
+                "Sistem AI tidak dapat mendeteksi ikan lele pada gambar ini. "
+                "Pastikan Anda mengunggah foto ikan lele yang jelas, terfokus, "
+                "dan memiliki pencahayaan yang baik agar AI dapat menganalisis "
+                "kondisi kesehatan lele dengan akurat."
+            )
+        else:
+            try:
+                penyakit = Penyakit.objects.get(nama__iexact=penyakit_nama)
+                log.rekomendasi_penanganan = penyakit.penanganan
+            except Penyakit.DoesNotExist:
+                log.rekomendasi_penanganan = "Konsultasikan dengan pakar perikanan untuk penanganan lebih lanjut."
 
         log.save()
         logger.info(f"Deteksi #{detection_log_id} selesai: {penyakit_nama} ({hasil['confidence']:.2%})")

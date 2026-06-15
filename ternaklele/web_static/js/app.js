@@ -582,15 +582,27 @@ function displayDetectionResult(result) {
     const penangananEl = document.getElementById("res-treatment");
     
     const penyakitNama = result.penyakit_terdeteksi;
-    labelEl.innerText = penyakitNama.replace("_", " ");
     
-    if (penyakitNama === "Sehat") {
+    if (penyakitNama === "Bukan Lele" || penyakitNama === "Bukan_Lele") {
+        labelEl.innerText = "Tidak Dikenali";
+        badgeEl.innerText = "Bukan Lele";
+        badgeEl.className = "result-badge";
+        badgeEl.style.backgroundColor = "#6b7280";
+        badgeEl.style.color = "#ffffff";
+        deskripsiEl.innerText = "Gambar tidak teridentifikasi sebagai ikan lele.";
+    } else if (penyakitNama === "Sehat") {
+        labelEl.innerText = "Sehat";
         badgeEl.innerText = "Sehat";
         badgeEl.className = "result-badge badge-sehat";
+        badgeEl.style.backgroundColor = "";
+        badgeEl.style.color = "";
         deskripsiEl.innerText = "Selamat! Ikan lele Anda terdeteksi sehat dan normal.";
     } else {
+        labelEl.innerText = penyakitNama.replace("_", " ");
         badgeEl.innerText = "Sakit";
         badgeEl.className = "result-badge badge-sakit";
+        badgeEl.style.backgroundColor = "";
+        badgeEl.style.color = "";
         deskripsiEl.innerText = `Ikan lele Anda terindikasi terkena penyakit ${penyakitNama.replace("_", " ")}.`;
     }
     
@@ -636,13 +648,19 @@ function displayDetectionResult(result) {
     });
     
     // Penanganan
-    penangananEl.innerHTML = result.rekomendasi_penanganan || "Tidak ada rekomendasi spesifik.";
-    
-    // Chat button shortcut
-    const chatBtn = document.getElementById("btn-chat-shortcut");
-    chatBtn.onclick = () => {
-        startChatAbout(penyakitNama);
-    };
+    if (penyakitNama === "Bukan Lele" || penyakitNama === "Bukan_Lele") {
+        penangananEl.innerHTML = "Sistem AI tidak mendeteksi objek ikan lele pada gambar dengan tingkat keakuratan yang cukup. Silakan unggah foto ikan lele yang terfokus, dekat, dan memiliki pencahayaan yang baik.";
+        document.getElementById("btn-chat-shortcut").style.display = "none";
+    } else {
+        penangananEl.innerHTML = result.rekomendasi_penanganan || "Tidak ada rekomendasi spesifik.";
+        document.getElementById("btn-chat-shortcut").style.display = "inline-flex";
+        
+        // Chat button shortcut
+        const chatBtn = document.getElementById("btn-chat-shortcut");
+        chatBtn.onclick = () => {
+            startChatAbout(penyakitNama);
+        };
+    }
     
     // Scroll to results
     resultContainer.scrollIntoView({ behavior: "smooth" });
