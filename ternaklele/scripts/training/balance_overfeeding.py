@@ -9,7 +9,7 @@ from pathlib import Path
 from PIL import Image, ImageEnhance
 import random
 
-ROOT = Path(__file__).resolve().parent
+ROOT = Path(__file__).resolve().parents[2] if Path(__file__).resolve().parent.name == "training" else Path(__file__).resolve().parent
 OVERFEEDING_DIR = ROOT / "dataset" / "fish_disease" / "Overfeeding"
 
 # Kumpulkan citra asli (bukan hasil augmentasi sebelumnya)

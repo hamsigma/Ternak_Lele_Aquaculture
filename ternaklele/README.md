@@ -123,10 +123,13 @@ ternaklele/
 │       └── gradcam.py          # Generator Visualisasi Heatmap Explainability Grad-CAM
 ├── dataset/                    # Direktori Dataset Gambar Lele (1.538 Citra Bersih & Seimbang)
 │   └── fish_disease/           # 5 Folder: Sehat, Aeromonas, Parasit, Jamur, Overfeeding
+├── scripts/                    # Skrip Otomasi Terstruktur
+│   ├── training/               # Skrip Training (train_rigorous.py, balance_overfeeding.py, dll)
+│   ├── evaluation/             # Skrip Evaluasi & Pengujian (verify_suite.py, dll)
+│   ├── maintenance/            # Skrip Pemeliharaan (reset_admin_password.py, check_db.py, dll)
+│   └── README.md               # Panduan Menjalankan Seluruh Skrip
 ├── static/ & web_static/       # Aset Frontend Web SPA Glassmorphism
-├── train_rigorous.py           # Skrip Pelatihan Ketat Bebas Kebocoran (Strict Zero-Leakage)
-├── balance_overfeeding.py      # Skrip Penyeimbang Dataset Overfeeding (Geometric Augmentation)
-├── verify_suite.py             # Suite Pengujian Otomatis 5 Kelas Penyakit & OOD (100% Pass)
+├── manage.py                   # Django CLI Management Script
 └── run_servers.py              # Script Otomatis Menjalankan Backend (:8000) & Frontend (:8080)
 ```
 

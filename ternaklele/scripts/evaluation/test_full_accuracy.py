@@ -3,8 +3,13 @@ Test Komprehensif Akurasi Klasifikasi AI
 Menguji SEMUA gambar di dataset untuk mengukur akurasi nyata model.
 """
 import django, os, sys, glob, time
+
+ROOT_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", ".."))
+if ROOT_DIR not in sys.path:
+    sys.path.insert(0, ROOT_DIR)
+os.chdir(ROOT_DIR)
+
 os.environ['DJANGO_SETTINGS_MODULE'] = 'config.settings.development'
-sys.path.insert(0, '.')
 django.setup()
 
 # Reset singleton agar load model terbaru

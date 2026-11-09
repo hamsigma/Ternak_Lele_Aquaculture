@@ -1,7 +1,11 @@
 import os, sys, glob, django
 
+ROOT_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", ".."))
+if ROOT_DIR not in sys.path:
+    sys.path.insert(0, ROOT_DIR)
+os.chdir(ROOT_DIR)
+
 os.environ['DJANGO_SETTINGS_MODULE'] = 'config.settings.development'
-sys.path.insert(0, os.path.abspath('.'))
 django.setup()
 
 from core.ai.classifier import get_classifier

@@ -19,7 +19,7 @@ import glob
 from pathlib import Path
 from collections import Counter
 
-ROOT = Path(__file__).resolve().parent
+ROOT = Path(__file__).resolve().parents[2] if Path(__file__).resolve().parent.name == "training" else Path(__file__).resolve().parent
 sys.path.insert(0, str(ROOT))
 
 import torch
