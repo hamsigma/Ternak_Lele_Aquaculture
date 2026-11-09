@@ -84,7 +84,7 @@ function setupNavigation() {
             const targetSection = link.getAttribute("data-section");
             
             // Protect authenticated sections
-            const authRequired = ["dashboard", "detection", "chatbot", "history"].includes(targetSection);
+            const authRequired = ["dashboard", "history"].includes(targetSection);
             if (authRequired && !state.token) {
                 showToast("Anda harus masuk terlebih dahulu.", "error");
                 showSection("auth");
@@ -387,10 +387,15 @@ function setupUpload() {
         const formData = new FormData();
         formData.append("image", state.selectedFile);
         
+        const headers = {};
+        if (state.token) {
+            headers["Authorization"] = `Bearer ${state.token}`;
+        }
+        
         try {
             const response = await fetch(API_URLS.upload, {
                 method: "POST",
-                headers: { "Authorization": `Bearer ${state.token}` },
+                headers: headers,
                 body: formData
             });
             
@@ -427,8 +432,12 @@ async function pollDetectionResult(logId) {
         }
         
         try {
+            const headers = {};
+            if (state.token) {
+                headers["Authorization"] = `Bearer ${state.token}`;
+            }
             const response = await fetch(API_URLS.result(logId), {
-                headers: { "Authorization": `Bearer ${state.token}` }
+                headers: headers
             });
             
             if (response.ok) {
@@ -860,7 +869,7 @@ function getDiseaseIcon(name) {
     const lowerName = name.toLowerCase();
     if (lowerName.includes("aeromonas")) return "🦠";     // Bakteri Aeromonas
     if (lowerName.includes("jamur")) return "🍄";         // Jamur/Fungi Saprolegnia
-    if (lowerName.includes("malnutrisi")) return "🦴";   // Defisiensi gizi (kurus/tulang)
+    if (lowerName.includes("parasit")) return "🪱";     // Infeksi parasit (cacing/protozoa/white spot)
     if (lowerName.includes("overfeeding")) return "🎈";   // Kembung perut buncit (balon)
     return "🐟";
 }

@@ -1,6 +1,13 @@
+# ==========================================
+# Dokumen & Referensi Lokal
+# ==========================================
+docs/
+*.pdf
+
 # Environment
 .env
 *.env
+.env.*
 
 # Python
 __pycache__/
@@ -16,13 +23,22 @@ build/
 
 # Django
 *.log
+*_log.txt
+*_output.txt
 media/
 staticfiles/
 db.sqlite3
+*.sqlite3
 
 # AI Models (file besar, simpan di storage terpisah)
 core/ai/models/*.pth
 core/ai/models/*.pt
+*.pth
+*.pt
+stage_*_checkpoint.pth
+
+# Data cache
+*.parquet
 
 # Virtual environment
 venv/
@@ -33,3 +49,8 @@ env/
 .vscode/
 .idea/
 *.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db

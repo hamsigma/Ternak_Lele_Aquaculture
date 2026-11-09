@@ -18,7 +18,7 @@ print()
 
 correct_count = 0
 total = 0
-test_classes = ['Aeromonas', 'Jamur', 'Overfeeding', 'Sehat', 'Malnutrisi']
+test_classes = ['Aeromonas', 'Jamur', 'Overfeeding', 'Sehat', 'Parasit']
 for kelas in test_classes:
     imgs = glob.glob('dataset/fish_disease/' + kelas + '/*.jpg')
     if not imgs:

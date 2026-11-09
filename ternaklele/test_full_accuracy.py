@@ -20,7 +20,7 @@ print('  Model loaded:', clf.model is not None)
 print('  Device:', clf.device)
 print('='*65)
 
-test_classes = ['Sehat', 'Aeromonas', 'Malnutrisi', 'Jamur', 'Overfeeding']
+test_classes = ['Sehat', 'Aeromonas', 'Parasit', 'Jamur', 'Overfeeding']
 
 # Per-class stats
 class_correct = {}

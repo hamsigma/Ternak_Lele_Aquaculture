@@ -19,15 +19,18 @@ const DISEASES_DB = [
         ]
     },
     {
-        nama: "Malnutrisi",
-        nama_ilmiah: "Defisiensi Nutrisi Kronis",
-        deskripsi: "Kondisi kekurangan gizi kronis pada lele yang ditandai dengan kepala berukuran besar tidak proporsional dibanding badan yang kecil dan kurus. Terjadi akibat pakan tidak mencukupi kebutuhan nutrisi ikan.",
-        gejala: "Kepala tampak besar dan tidak proporsional dengan tubuh yang sangat kecil/kurus, tulang belakang terlihat menonjol, perut cekung, warna tubuh pucat, pertumbuhan sangat terhambat, ikan lamban dan mudah stres.",
-        penyebab: "Kekurangan pakan secara konsisten, kualitas pakan rendah (protein tidak mencukupi), persaingan pakan yang ketat akibat kepadatan tinggi, atau ikan lemah yang kalah bersaing mendapatkan pakan.",
-        pencegahan: "Lakukan grading/sortasi ukuran ikan secara rutin. Berikan pakan sesuai kebutuhan (3-5% biomassa/hari). Gunakan pakan berkualitas dengan protein minimal 30%. Pastikan semua ikan mendapat jatah pakan yang sama.",
-        penanganan: "Tingkatkan frekuensi pemberian pakan 3-4 kali sehari. Gunakan pakan dengan kandungan protein tinggi (30-35%). Pisahkan ikan kecil dari yang besar agar dapat pakan merata. Tambahkan suplemen vitamin dan mineral ke pakan.",
+        nama: "Parasit",
+        nama_ilmiah: "Ichthyophthirius multifiliis / Trichodina sp.",
+        deskripsi: "Infeksi parasit protozoa atau ektoparasit pada lele yang menyerang kulit, sirip, dan insang (White Spot / Trichodina).",
+        gejala: "Bintik-bintik putih kecil pada permukaan tubuh dan sirip, lendir tubuh berlebihan, lele sering menggosokkan tubuh ke dinding kolam.",
+        penyebab: "Kualitas air kolam menurun, suhu dingin, atau benih baru tanpa karantina.",
+        pencegahan: "Jaga kebersihan air, siphon rutin dasar kolam, dan karantina benih baru sebelum tebar.",
+        penanganan: "Karantina ikan terinfeksi, berikan garam ikan (1-3 g/liter) dan larutan Methylene Blue.",
         obat_list: [
-            {nama_obat: "Vitamin C (Asam Askorbat)", dosis: "100-200 mg/kg pakan", cara_penggunaan: "Campurkan ke pakan setiap hari untuk meningkatkan imunitas dan pemulihan.", catatan: "Aman digunakan hingga panen."},
+            {nama_obat: "Methylene Blue", dosis: "2-3 ppm", cara_penggunaan: "Larutkan di kolam karantina selama 24 jam dengan aerasi.", catatan: "Hindari sinar matahari langsung."},
+            {nama_obat: "Garam Ikan (NaCl Non-Yodium)", dosis: "1-3 kg per 1.000 liter air", cara_penggunaan: "Larutkan merata di kolam untuk memutus siklus hidup parasit.", catatan: "Aman untuk penggunaan rutin."}
+        ]
+    },
             {nama_obat: "Suplemen Mineral Perikanan", dosis: "2-3 g/kg pakan", cara_penggunaan: "Campurkan ke pakan 3x seminggu selama masa pemulihan.", catatan: "Tersedia di toko pertanian/perikanan."}
         ]
     },
@@ -86,9 +89,9 @@ const ARTICLES_DB = [
         konten: `Aeromonas hydrophila adalah musuh utama pembudidaya lele. Penyakit ini bisa meludeskan seluruh kolam dalam hitungan hari jika tidak ditangani cepat.\n\n**Deteksi Awal**\nPerhatikan tanda-tanda: ikan berenang di permukaan, nafsu makan turun tiba-tiba, muncul luka kemerahan di tubuh. Segera isolasi ikan yang tampak sakit.\n\n**Penanganan Darurat**\n1. Isolasi ikan sakit ke wadah terpisah\n2. Ganti 50% air kolam dengan air segar yang sudah diendapkan\n3. Tambahkan garam NaCl 500 gram per 100 liter air (5 g/L)\n4. Tingkatkan aerasi maksimal\n\n**Pengobatan Medis**\nOksitetrasiklin (OTC) 50 mg/kg pakan selama 7-10 hari adalah pilihan umum. Jangan gunakan antibiotik sembarangan karena dapat menimbulkan resistensi.\n\n**Pencegahan Jangka Panjang**\n- Probiotik Bacillus sp. 1-2 g/kg pakan 3x seminggu\n- Bawang putih cincang 5 g/kg pakan sebagai antibakteri alami\n- Desinfeksi kolam sebelum tebar`
     },
     {
-        judul: "Mengenali dan Menangani Malnutrisi pada Lele: Kepala Besar Badan Kecil",
+        judul: "Mengenali dan Mengatasi Serangan Parasit pada Lele",
         kategori: "Pengendalian Penyakit",
-        konten: `Malnutrisi atau kekurangan gizi adalah masalah yang sering luput dari perhatian pembudidaya, namun bisa menyebabkan kerugian besar akibat pertumbuhan yang tidak seragam.\n\n**Tanda-Tanda Malnutrisi**\nKepala besar yang tidak proporsional dibanding badan, ikan sangat kurus, dan gerakan lamban.\n\n**Solusi Penanganan**\nGrading ukuran secara berkala agar tidak kalah bersaing pakan. Berikan pelet protein >30% yang dibasahi vitamin C/suplemen perikanan.`
+        konten: `Serangan parasit seperti White Spot (Ichthyophthirius) dan Trichodina merupakan salah satu ancaman utama kematian bibit lele.\n\n**Tanda-Tanda Serangan Parasit**\nBintik-bintik putih halus pada kulit/sirip, lendir berlebih, ikan sering menggesekkan badan ke dinding kolam, nafsu makan turun.\n\n**Solusi Penanganan**\nSiphon dasar kolam, berikan garam ikan 1-2 kg/m³, dan gunakan larutan Methylene Blue pada wadah karantina.`
     }
 ];
 
@@ -105,7 +108,7 @@ const CHATBOT_KEYWORDS = {
     kanibal: ["kanibal", "saling makan", "grading", "sortasi", "kepadatan", "ukuran beda"],
     biaya: ["biaya", "modal", "untung", "fcr", "keuntungan", "harga", "pasar"],
     aeromonas: ["aeromonas", "borok", "luka", "bakteri", "bercak", "merah"],
-    malnutrisi: ["malnutrisi", "gizi", "kepala besar", "kurus", "badan kecil"],
+    parasit: ["parasit", "bintik putih", "white spot", "gatal", "trichodina", "gesek", "kutu"],
     jamur: ["jamur", "kapas", "putih", "saprolegnia", "fungi"],
     overfeeding: ["overfeeding", "kembung", "pencernaan", "pakan berlebih", "terapung", "perut besar"],
     sehat: ["sehat", "normal", "baik", "segar"],
@@ -182,7 +185,7 @@ function setupNavigation() {
             const targetSection = link.getAttribute("data-section");
             
             // Protect authenticated sections
-            const authRequired = ["dashboard", "detection", "chatbot", "history"].includes(targetSection);
+            const authRequired = ["dashboard", "history"].includes(targetSection);
             if (authRequired && !state.token) {
                 showToast("Anda harus masuk terlebih dahulu.", "error");
                 showSection("auth");
@@ -454,20 +457,20 @@ function runMockClassifier() {
         diseaseName = "Aeromonas";
     } else if (fileName.includes("jamur") || fileName.includes("kapas") || fileName.includes("putih")) {
         diseaseName = "Jamur";
-    } else if (fileName.includes("malnutrisi") || fileName.includes("kurus") || fileName.includes("kepala")) {
-        diseaseName = "Malnutrisi";
+    } else if (fileName.includes("parasit") || fileName.includes("bintik") || fileName.includes("white")) {
+        diseaseName = "Parasit";
     } else if (fileName.includes("overfeeding") || fileName.includes("kembung") || fileName.includes("buncit")) {
         diseaseName = "Overfeeding";
     } else {
         // Random disease selection for demo
-        const diseases = ["Sehat", "Aeromonas", "Malnutrisi", "Jamur", "Overfeeding"];
+        const diseases = ["Sehat", "Aeromonas", "Parasit", "Jamur", "Overfeeding"];
         diseaseName = diseases[Math.floor(Math.random() * diseases.length)];
     }
 
     const confidence = parseFloat((0.82 + Math.random() * 0.17).toFixed(4));
     const probs = {};
     let sum = 0;
-    const classes = ["Sehat", "Aeromonas", "Malnutrisi", "Jamur", "Overfeeding"];
+    const classes = ["Sehat", "Aeromonas", "Parasit", "Jamur", "Overfeeding"];
 
     classes.forEach(c => {
         if (c === diseaseName) {
@@ -1063,7 +1066,7 @@ function getSimulatedLeliResponse(query) {
         const intro_variations = [
             "Halo Kak! Kenalin, aku **Leli** (asisten AI ahli budidaya ikan lele) 🐟✨\n\n" +
             "Aku diciptakan khusus untuk menemani Kakak dalam merawat kolam lele kesayangan. Kakak bisa tanya-tanya aku tentang:\n" +
-            "• **Diagnosis penyakit lele** (seperti Aeromonas, Jamur, Malnutrisi, atau Overfeeding)\n" +
+            "• **Diagnosis penyakit lele** (seperti Aeromonas, Jamur, Parasit, atau Overfeeding)\n" +
             "• **Tips pakan** yang hemat dan bergizi\n" +
             "• **Menjaga kualitas air** biar lele nggak stres\n" +
             "• **Persiapan kolam** dari awal tebar sampai panen raya!\n\n" +
@@ -1121,7 +1124,7 @@ function getSimulatedLeliResponse(query) {
     const default_variations = [
         "Halo Kak! Aku Leli, asisten AI budidaya ikan lele. 😊\n\n" +
         "Ada yang bisa Leli bantu untuk kolam lele Kakak hari ini? Kakak bisa tanya soal:\n" +
-        "• **Penyakit lele** (seperti Malnutrisi, Jamur, Overfeeding, atau Aeromonas)\n" +
+        "• **Penyakit lele** (seperti Parasit, Jamur, Overfeeding, atau Aeromonas)\n" +
         "• **Manajemen Air & Pakan**\n" +
         "• **Cara Tebar Bibit & Panen**",
         
@@ -1160,7 +1163,7 @@ function displayDiseases(diseases) {
         const nameLower = d.nama.toLowerCase();
         if (nameLower.includes("aeromonas")) icon = "🦠";
         else if (nameLower.includes("jamur")) icon = "🍄";
-        else if (nameLower.includes("malnutrisi")) icon = "🦴";
+        else if (nameLower.includes("parasit")) icon = "🪱";
         else if (nameLower.includes("overfeeding")) icon = "🎈";
         
         card.innerHTML = `

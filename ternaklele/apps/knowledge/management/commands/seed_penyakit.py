@@ -20,16 +20,16 @@ PENYAKIT_DATA = [
         ],
     },
     {
-        "nama": "Malnutrisi",
-        "nama_ilmiah": "Defisiensi Nutrisi Kronis",
-        "deskripsi": "Kondisi kekurangan gizi kronis pada lele yang ditandai dengan kepala berukuran besar tidak proporsional dibanding badan yang kecil dan kurus. Terjadi akibat pakan tidak mencukupi kebutuhan nutrisi ikan.",
-        "gejala": "Kepala tampak besar dan tidak proporsional dengan tubuh yang sangat kecil/kurus, tulang belakang terlihat menonjol, perut cekung, warna tubuh pucat, pertumbuhan sangat terhambat, ikan lamban dan mudah stres.",
-        "penyebab": "Kekurangan pakan secara konsisten, kualitas pakan rendah (protein tidak mencukupi), persaingan pakan yang ketat akibat kepadatan tinggi, atau ikan lemah yang kalah bersaing mendapatkan pakan.",
-        "penanganan": "Tingkatkan frekuensi pemberian pakan 3-4 kali sehari. Gunakan pakan dengan kandungan protein tinggi (30-35%). Pisahkan ikan kecil dari yang besar agar dapat pakan merata. Tambahkan suplemen vitamin dan mineral ke pakan.",
-        "pencegahan": "Lakukan grading/sortasi ukuran ikan secara rutin. Berikan pakan sesuai kebutuhan (3-5% biomassa/hari). Gunakan pakan berkualitas dengan protein minimal 30%. Pastikan semua ikan mendapat jatah pakan yang sama.",
+        "nama": "Parasit",
+        "nama_ilmiah": "Ichthyophthirius multifiliis / Trichodina sp.",
+        "deskripsi": "Infeksi parasit protozoa atau ektoparasit pada lele yang menyerang kulit, sirip, dan insang. Sering dikenal sebagai penyakit bintik putih (White Spot) atau gatal Trichodina yang menyebabkan lele sering menggosokkan tubuh ke dinding kolam.",
+        "gejala": "Bintik-bintik putih kecil pada permukaan tubuh dan sirip, lendir tubuh berlebihan, lele sering menggantung di permukaan atau menggosokkan tubuh ke dinding kolam, sirip menguncup, nafsu makan menurun drastis, serta gerakan tidak beraturan.",
+        "penyebab": "Kualitas air kolam yang buruk, penumpukan sisa pakan di dasar, suhu air yang turun drastis (musim hujan/dingin), atau masuknya benih baru yang telah terinfeksi parasit tanpa karantina.",
+        "penanganan": "Karantina ikan terinfeksi, naikkan suhu air atau pindahkan ke wadah garam ikan (dosis 1-3 g/liter selama perendaman). Berikan obat anti-parasit seperti methylene blue atau ekstrak daun pepaya/sirih.",
+        "pencegahan": "Jaga kebersihan dasar kolam dengan siphon rutin, berikan garam ikan berkala 500g/m³ saat pergantian air, lakukan karantina bibit baru minimal 3 hari sebelum tebar ke kolam utama.",
         "obat": [
-            {"nama_obat": "Vitamin C (Asam Askorbat)", "dosis": "100-200 mg/kg pakan", "cara_penggunaan": "Campurkan ke pakan setiap hari untuk meningkatkan imunitas dan pemulihan.", "catatan": "Aman digunakan hingga panen."},
-            {"nama_obat": "Suplemen Mineral Perikanan", "dosis": "2-3 g/kg pakan", "cara_penggunaan": "Campurkan ke pakan 3x seminggu selama masa pemulihan.", "catatan": "Tersedia di toko pertanian/perikanan."},
+            {"nama_obat": "Methylene Blue", "dosis": "2-3 ppm (2-3 ml per 1.000 liter air)", "cara_penggunaan": "Larutkan ke dalam kolam karantina selama 24 jam dengan aerasi kuat.", "catatan": "Hindari paparan sinar matahari langsung saat aplikasi."},
+            {"nama_obat": "Garam Ikan (NaCl Non-Yodium)", "dosis": "1-3 kg per 1.000 liter air", "cara_penggunaan": "Larutkan merata di kolam untuk memutus siklus hidup parasit dan mengurangi stres osmosis.", "catatan": "Aman untuk penggunaan rutin."},
         ],
     },
     {
@@ -143,28 +143,27 @@ Konsultasikan dengan dokter hewan atau penyuluh perikanan untuk penggunaan antib
         "penyakit_nama": "Aeromonas",
     },
     {
-        "judul": "Mengenali dan Menangani Malnutrisi pada Lele: Kepala Besar Badan Kecil",
+        "judul": "Mengenali dan Mengatasi Serangan Parasit pada Ikan Lele",
         "kategori": "Pengendalian Penyakit",
-        "konten": """Malnutrisi atau kekurangan gizi adalah masalah yang sering luput dari perhatian pembudidaya, namun bisa menyebabkan kerugian besar akibat pertumbuhan yang tidak seragam.
+        "konten": """Serangan parasit seperti White Spot (Ichthyophthirius) dan Trichodina merupakan salah satu ancaman utama kematian massal benih lele, terutama saat suhu kolam drop di musim hujan.
 
-**Tanda-Tanda Malnutrisi**
-Ikan lele yang mengalami malnutrisi akan menunjukkan kepala yang tampak besar dan tidak proporsional dibanding badannya yang kecil dan kurus. Tulang belakang terlihat menonjol, perut cekung, dan warna kulit pucat.
+**Tanda-Tanda Serangan Parasit**
+Ikan lele yang terserang parasit akan memperlihatkan bintik-bintik putih halus pada kulit, produksi lendir berlebih, sering menggesekkan badan ke dinding kolam, dan nafsu makan turun drastis.
 
 **Penyebab Utama**
-- Kepadatan tebar terlalu tinggi sehingga ada ikan yang tidak kebagian pakan
-- Kualitas pakan rendah (protein di bawah 25%)
-- Frekuensi pakan terlalu jarang
-- Ukuran lele tidak seragam sehingga yang kecil kalah bersaing
+- Kualitas air menurun dan endapan lumpur/feses di dasar kolam
+- Penurunan suhu air drastis (cuaca dingin atau hujan lebat)
+- Penularan dari bibit baru yang tidak dikarantina
 
 **Penanganan Segera**
-1. Lakukan sortasi/grading untuk memisahkan ikan kecil dari yang besar
-2. Berikan pakan protein tinggi (30-35%) 4x sehari untuk ikan yang malnutrisi
-3. Tambahkan suplemen vitamin dan mineral
-4. Kurangi kepadatan kolam
+1. Lakukan siphon dasar kolam untuk membuang kotoran dan kista parasit
+2. Berikan garam ikan dosis 1-2 kg/m³ air kolam
+3. Gunakan larutan Methylene Blue pada bak karantina
+4. Pertahankan aerasi yang cukup selama masa pengobatan
 
 **Pencegahan**
-Lakukan grading rutin setiap 2-3 minggu. Monitor FCR dan pertumbuhan rata-rata secara berkala.""",
-        "penyakit_nama": "Malnutrisi",
+Selalu karantina bibit lele sebelum ditebar ke kolam utama dan jaga kebersihan air secara konsisten.""",
+        "penyakit_nama": "Parasit",
     },
     {
         "judul": "Overfeeding dan Gangguan Pencernaan: Ancaman Tersembunyi di Kolam Lele",
@@ -219,7 +218,7 @@ class Command(BaseCommand):
                 Obat.objects.create(penyakit=penyakit, **obat)
 
         # Hapus penyakit lama yang sudah tidak dipakai
-        old_names = ["Bercak_Merah", "Parasit"]
+        old_names = ["Bercak_Merah", "Malnutrisi"]
         for old_name in old_names:
             deleted, _ = Penyakit.objects.filter(nama=old_name).delete()
             if deleted:

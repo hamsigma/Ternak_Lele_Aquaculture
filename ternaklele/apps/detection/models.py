@@ -12,7 +12,9 @@ class DetectionLog(models.Model):
     user = models.ForeignKey(
         settings.AUTH_USER_MODEL,
         on_delete=models.CASCADE,
-        related_name="detection_logs"
+        related_name="detection_logs",
+        null=True,
+        blank=True
     )
     image = models.ImageField(upload_to="deteksi/%Y/%m/")
     penyakit_terdeteksi = models.CharField(max_length=100, blank=True)

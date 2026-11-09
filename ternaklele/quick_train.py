@@ -31,7 +31,7 @@ BATCH_SIZE  = 8        # kecil agar cepat di CPU
 LR          = 1e-3
 INPUT_SIZE  = 300      # disamakan ke 300 agar konsisten dengan classifier
 
-TARGET_CLASSES = ["Sehat", "Aeromonas", "Malnutrisi", "Jamur", "Overfeeding"]
+TARGET_CLASSES = ["Sehat", "Aeromonas", "Parasit", "Jamur", "Overfeeding"]
 NUM_CLASSES    = len(TARGET_CLASSES)
 
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")

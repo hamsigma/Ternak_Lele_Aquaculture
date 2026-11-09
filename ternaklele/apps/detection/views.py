@@ -9,13 +9,14 @@ from .tasks import run_detection
 
 
 class DetectionUploadView(APIView):
-    permission_classes = [permissions.IsAuthenticated]
+    permission_classes = [permissions.AllowAny]
 
     def post(self, request):
         serializer = DetectionUploadSerializer(data=request.data)
         if serializer.is_valid():
-            log = serializer.save(user=request.user)
-            # Jalankan deteksi secara asinkronus via Celery
+            user = request.user if request.user.is_authenticated else None
+            log = serializer.save(user=user)
+            # Jalankan deteksi secara asinkronus via Celery / eager
             run_detection.delay(log.id)
             return Response(
                 {"id": log.id, "status": "Gambar diterima, sedang diproses..."},
@@ -26,18 +27,20 @@ class DetectionUploadView(APIView):
 
 class DetectionResultView(generics.RetrieveAPIView):
     serializer_class = DetectionLogSerializer
-    permission_classes = [permissions.IsAuthenticated]
+    permission_classes = [permissions.AllowAny]
 
     def get_queryset(self):
-        return DetectionLog.objects.filter(user=self.request.user)
+        return DetectionLog.objects.all()
 
 
 class DetectionHistoryView(generics.ListAPIView):
     serializer_class = DetectionLogSerializer
-    permission_classes = [permissions.IsAuthenticated]
+    permission_classes = [permissions.AllowAny]
 
     def get_queryset(self):
-        return DetectionLog.objects.filter(user=self.request.user)
+        if self.request.user.is_authenticated:
+            return DetectionLog.objects.filter(user=self.request.user)
+        return DetectionLog.objects.all()[:20]
 
 
 class ValidasiPakarView(generics.UpdateAPIView):

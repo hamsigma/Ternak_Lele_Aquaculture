@@ -109,7 +109,7 @@ import random
 
 PENYAKIT_KEYWORDS = {
     "aeromonas":    ["aeromonas", "borok", "luka", "bakteri", "bercak", "merah"],
-    "malnutrisi":   ["malnutrisi", "gizi", "kepala besar", "kurus", "badan kecil"],
+    "parasit":      ["parasit", "bintik putih", "white spot", "gatal", "trichodina", "gesek", "kutu"],
     "jamur":        ["jamur", "kapas", "putih", "saprolegnia", "fungi"],
     "overfeeding":  ["overfeeding", "kembung", "pencernaan", "pakan berlebih", "terapung", "perut besar"],
     "sehat":        ["sehat", "normal", "baik", "segar"],
@@ -297,7 +297,7 @@ def _build_smart_response(query: str, knowledge_context: str) -> str:
         intro_variations = [
             "Halo Kak! Kenalin, aku **Leli** (asisten AI ahli budidaya ikan lele) 🐟✨\n\n"
             "Aku diciptakan khusus untuk menemani Kakak dalam merawat kolam lele kesayangan. Kakak bisa tanya-tanya aku tentang:\n"
-            "• **Diagnosis penyakit lele** (seperti Aeromonas, Jamur, Malnutrisi, atau Overfeeding)\n"
+            "• **Diagnosis penyakit lele** (seperti Aeromonas, Jamur, Parasit, atau Overfeeding)\n"
             "• **Tips pakan** yang hemat dan bergizi\n"
             "• **Menjaga kualitas air** biar lele nggak stres\n"
             "• **Persiapan kolam** dari awal tebar sampai panen raya!\n\n"
@@ -366,7 +366,7 @@ def _build_smart_response(query: str, knowledge_context: str) -> str:
     default_variations = [
         "Halo Kak! Aku Leli, asisten AI budidaya ikan lele. 😊\n\n"
         "Ada yang bisa Leli bantu untuk kolam lele Kakak hari ini? Kakak bisa tanya soal:\n"
-        "• **Penyakit lele** (seperti Malnutrisi, Jamur, Overfeeding, atau Aeromonas)\n"
+        "• **Penyakit lele** (seperti Parasit, Jamur, Overfeeding, atau Aeromonas)\n"
         "• **Manajemen Air & Pakan**\n"
         "• **Cara Tebar Bibit & Panen**\n\n",
         

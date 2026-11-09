@@ -124,4 +124,4 @@ CELERY_TASK_ALWAYS_EAGER = env.bool("CELERY_TASK_ALWAYS_EAGER", default=True)
 
 OPENAI_API_KEY = env("OPENAI_API_KEY", default="")
 AI_MODEL_PATH = BASE_DIR / "core" / "ai" / "models" / "efficientnet_lele.pth"
-AI_CLASS_LABELS = ["Sehat", "Aeromonas", "Malnutrisi", "Jamur", "Overfeeding"]
+AI_CLASS_LABELS = ["Sehat", "Aeromonas", "Parasit", "Jamur", "Overfeeding"]

@@ -20,7 +20,7 @@ OUTPUT_PATH = ROOT / "core" / "ai" / "models" / "efficientnet_lele.pth"
 
 # Gunakan 224 untuk training cepat, model runtime tetap 300
 INPUT_SIZE = 224
-TARGET_CLASSES = ["Sehat", "Aeromonas", "Malnutrisi", "Jamur", "Overfeeding"]
+TARGET_CLASSES = ["Sehat", "Aeromonas", "Parasit", "Jamur", "Overfeeding"]
 NUM_CLASSES = len(TARGET_CLASSES)
 EPOCHS = 3
 BATCH_SIZE = 64

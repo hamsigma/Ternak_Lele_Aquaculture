@@ -30,7 +30,7 @@ BATCH_SIZE  = 16      # Balance antara kecepatan dan memori
 LR          = 5e-4
 INPUT_SIZE  = 300     # HARUS sama dengan LeleClassifier.INPUT_SIZE = (300, 300)
 
-TARGET_CLASSES = ["Sehat", "Aeromonas", "Malnutrisi", "Jamur", "Overfeeding"]
+TARGET_CLASSES = ["Sehat", "Aeromonas", "Parasit", "Jamur", "Overfeeding"]
 NUM_CLASSES    = len(TARGET_CLASSES)
 
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
