@@ -38,6 +38,9 @@ Menghadirkan platform asisten digital yang mampu mendeteksi kondisi kesehatan le
 4.  **Validasi Pakar**: Pengiriman diagnosis AI ke pakar perikanan terdaftar untuk konfirmasi lebih lanjut.
 5.  **Riwayat Deteksi**: Pencatatan riwayat unggahan deteksi baik untuk pengguna terdaftar maupun sesi tamu lokal.
 
+### 1.5 Batasan Klinis & Penafian Medis (Medical Disclaimer)
+Sistem AI Ternak Lele dirancang sebagai **alat bantu skrining awal dan pendukung keputusan (*Clinical Decision Support System*)**, **bukan sebagai penentu diagnosis mutlak atau vonis klinis yang pasti**. Diagnosis patologi lele secara definitif tetap membutuhkan pemeriksaan fisik langsung di lokasi (seperti inspeksi insang, mikroskopi lendir, atau nekropsi bedah) oleh **tenaga ahli atau pakar perikanan**. Hasil AI ditujukan sebagai bahan pertimbangan rujukan cepat bagi pembudidaya tambak.
+
 ---
 
 ## 2. SOFTWARE REQUIREMENT SPECIFICATION (SRS)
