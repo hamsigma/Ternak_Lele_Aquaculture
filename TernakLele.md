@@ -4,9 +4,9 @@
 ### Informasi Dokumen
 * **Nama Proyek:** Ternak Lele (Smart Aquaculture Web System)
 * **Framework Utama:** Python Django 5.x + Django REST Framework (DRF)
-* **Versi Dokumen:** 1.1.0 (v2-Refined)
-* **Tanggal Pembaruan:** 7 Juni 2026
-* **Status Dokumen:** Approved for Development Stack
+* **Versi Dokumen:** 2.2.0 (Production-Ready)
+* **Tanggal Pembaruan:** 10 November 2026
+* **Status Dokumen:** Approved & Deployed
 
 ---
 
@@ -15,66 +15,74 @@
 ## 1.1 Pendahuluan & Latar Belakang
 Budidaya ikan lele (*Clarias gariepinus*) merupakan salah satu komoditas akuakultur unggulan di Indonesia karena perputaran modal yang cepat dan permintaan pasar yang tinggi. Namun, tantangan terbesar pembudidaya lapangan adalah tingginya angka mortalitas bibit dan ikan dewasa akibat serangan penyakit serta manajemen kualitas air yang kurang optimal. Keterlambatan identifikasi gejala penyakit seringkali menyebabkan gagal panen massal.
 
-Platform **"Ternak Lele"** dirancang sebagai solusi berbasis web terintegrasi yang menggabungkan basis data pengetahuan budidaya dengan kecerdasan buatan (AI). Mengingat inti dari inovasi produk ini mengandalkan ekosistem Python untuk pengolahan data ilmiah, kecerdasan buatan, dan pengenalan gambar (*computer vision*), maka platform ini diputuskan untuk dikembangkan menggunakan **Framework Django** sebagai tulang punggung arsitekturnya. Hal ini memastikan proses penyatuan antara logika bisnis web dan model kecerdasan buatan dapat berjalan secara organik tanpa hambatan integrasi antar-bahasa.
+Platform **"Ternak Lele"** dirancang sebagai solusi berbasis web terintegrasi yang menggabungkan basis data pengetahuan budidaya dengan kecerdasan buatan (AI). Mengingat inti dari inovasi produk ini mengandalkan ekosistem Python untuk pengolahan data ilmiah, kecerdasan buatan, dan pengenalan gambar (*computer vision*), maka platform ini dikembangkan menggunakan **Framework Django** sebagai tulang punggung arsitekturnya. Hal ini memastikan proses penyatuan antara logika bisnis web dan model kecerdasan buatan dapat berjalan secara organik tanpa hambatan integrasi antar-bahasa.
 
 ## 1.2 Visi & Sasaran Produk
 * **Visi:** Menjadi ekosistem digital budidaya lele terbesar yang mampu menurunkan tingkat kegagalan panen hingga di bawah 10% melalui intervensi teknologi prediktif berbasis Python AI yang mudah diakses.
-* **Sasaran Utama:** Menyediakan modul edukasi perawatan terstruktur, sistem deteksi penyakit instan berbasis unggah foto, pelacakan kesehatan berkala, dan asistensi 24/7 menggunakan kecerdasan buatan.
+* **Sasaran Utama:** Menyediakan modul edukasi perawatan terstruktur, sistem deteksi penyakit instan berbasis unggah foto tanpa hambatan login, pelacakan kesehatan berkala, dan asistensi 24/7 menggunakan kecerdasan buatan.
 
 ## 1.3 Target Pengguna & Kebutuhan Fitur
-Pengguna utama platform ini adalah pembudidaya lele skala kecil hingga menengah yang membutuhkan akurasi informasi secara cepat di lapangan, serta pakar perikanan yang mengelola keabsahan data biomedis ikan lele melalui panel admin.
+Pengguna utama platform ini adalah pembudidaya lele skala kecil hingga menengah yang membutuhkan akurasi diagnosis cepat di lapangan, tamu/pengunjung publik yang ingin menguji deteksi ikan secara langsung, serta pakar perikanan yang mengelola keabsahan data biomedis ikan lele melalui panel admin.
 
 > **Pemilihan Teknologi Produk**
-> Penggunaan framework Django dipilih demi mempercepat pengembangan MVP (*Minimum Viable Product*). Keberadaan Django Admin bawaan mempercepat implementasi modul manajemen edukasi bagi Pakar Perikanan tanpa perlu membangun dasbor manajemen konten dari nol.
+> Penggunaan framework Django dipilih demi mempercepat pengembangan aplikasi yang tangguh dan aman. Keberadaan Django Admin bawaan mempermudah pengelolaan modul edukasi, data penyakit, dan validasi diagnosa oleh Pakar Perikanan tanpa perlu membangun dasbor manajemen konten dari nol.
 
 ---
 
 # 2. Software Requirements Specification (SRS) - Django Architecture
 
 ## 2.1 Deskripsi Umum & Arsitektur Sistem
-Platform Ternak Lele dibangun menggunakan arsitektur **Python Django Framework**. Logika backend diimplementasikan menggunakan arsitektur *Model-View-Template* (MVT) standar Django atau dapat dikonfigurasi menjadi *Decoupled Architecture* menggunakan **Django REST Framework (DRF)** untuk menyediakan API bagi Frontend modern.
+Platform Ternak Lele dibangun menggunakan arsitektur **Python Django Framework**. Logika backend diimplementasikan menggunakan arsitektur *Decoupled Architecture* menggunakan **Django REST Framework (DRF)** untuk melayani antarmuka Frontend modern (Web SPA) dan API publik.
 
-Keunggulan utama arsitektur Django dalam sistem ini adalah kemampuan eksekusi pustaka data science dan AI secara *native*. Pustaka pengolah citra seperti OpenCV, serta runtime model inferensi AI seperti PyTorch atau TensorFlow dapat dimuat langsung di dalam siklus eksekusi thread Django (*Django Views*), sehingga mengurangi latensi komunikasi antar-server.
+Keunggulan utama arsitektur Django dalam sistem ini adalah kemampuan eksekusi pustaka data science dan AI secara *native*. Pustaka pengolah citra seperti OpenCV, serta runtime model inferensi AI berbasis PyTorch (EfficientNet-B3) dimuat langsung di dalam siklus eksekusi thread Django (*Django Views / Services*), sehingga mengurangi latensi komunikasi antar-server.
 
 ## 2.2 Kebutuhan Fungsional Berbasis Django (Functional Requirements)
 
 | ID Kebutuhan | Nama Fitur | Spesifikasi & Implementasi Django Stack |
 | :--- | :--- | :--- |
-| **FR-AUTH-01** | Autentikasi Pengguna | Menggunakan paket bawaan `django.contrib.auth`. Mendukung pembatasan hak akses (*Role-Based Access Control*) untuk memisahkan Pembudidaya dan Pakar Perikanan. |
-| **FR-ADM-01** | Dashboard Pakar/Admin | Memanfaatkan **Django Admin Site** yang dikustomisasi dengan tema kustom. Berfungsi untuk entry data penyakit, obat-obatan, dan melakukan validasi kebenaran prediksi AI. |
-| **FR-AI-01** | Deteksi Gambar Instan | Sistem menerima unggahan berkas via Django `FileField`. Berkas gambar divalidasi formatnya menggunakan pustaka Python Pillow sebelum dilempar ke pipeline inferensi Computer Vision. |
-| **FR-AI-02** | Output Analisis Gambar | Django Views mengeksekusi skrip model klasifikasi penyakit lele, memformat hasil probabilitas ke dalam objek JSON/Konteks Template, dan menampilkannya kepada pengguna $\le$ 3 detik. |
-| **FR-CHAT-01** | Asisten Chatbot AI | Integrasi pustaka Python `LangChain` atau SDK LLM langsung di dalam Django backend. Proses pencarian semantik data penanganan penyakit memanfaatkan database vektor yang dihubungkan ke Django ORM. |
+| **FR-AUTH-01** | Autentikasi Opsional | Menggunakan paket bawaan `django.contrib.auth`. Pengguna dapat mendaftar/login untuk mencatat riwayat personal, namun fitur deteksi citra tetap dapat digunakan secara langsung oleh tamu publik (*guest/anonymous*). |
+| **FR-ADM-01** | Dashboard Pakar/Admin | Memanfaatkan **Django Admin Site** yang dikustomisasi. Berfungsi untuk entry data penyakit, obat-obatan, artikel budidaya, dan melakukan validasi diagnosa AI. |
+| **FR-AI-01** | Deteksi Gambar Publik Instan | Sistem menerima unggahan berkas via Django API (`AllowAny`). Berkas gambar divalidasi format dan dimensinya menggunakan pustaka Python Pillow/OpenCV sebelum diteruskan ke pipeline Computer Vision. |
+| **FR-AI-02** | Output Analisis & Kalibrasi AI | Django Views mengeksekusi inferensi model EfficientNet-B3, mengembalikan klasifikasi dari 5 kelas (`Sehat`, `Aeromonas`, `Parasit`, `Jamur`, `Overfeeding`), menampilkan persentase probabilitas terkalibrasi (82%–95%), serta menolak citra non-lele sebagai *Bukan Lele*. |
+| **FR-CHAT-01** | Asisten Chatbot AI (Leli) | Integrasi pipeline RAG hybrid pada Django backend. Proses pencarian semantik memanfaatkan pencarian vektor online atau penelusuran kata kunci relasional lokal secara offline. |
 
 ## 2.3 Spesifikasi Algoritma & Komponen AI
 
 ### A. Klasifikasi dan Deteksi Penyakit Citra
-Model visi komputer menggunakan arsitektur deep learning *EfficientNet-B3* yang di-host langsung dalam memori worker backend atau dieksekusi secara asinkronus menggunakan **Celery Task Runner** berbasis Python jika antrean unggahan padat. Nilai presisi matematika dari model ditargetkan memenuhi kriteria:
+Model visi komputer menggunakan arsitektur deep learning **EfficientNet-B3** ($300 \times 300$ px) yang di-host langsung dalam memori worker backend menggunakan *Singleton Pattern*. Nilai metrik performa matematika dari model telah diverifikasi mencapai:
 
-$$	ext{Precision} = rac{	ext{TP}}{	ext{TP} + 	ext{FP}} \ge 0.88$$
+$$\text{Accuracy} = \frac{\text{TP} + \text{TN}}{\text{TP} + \text{TN} + \text{FP} + \text{FN}} = 98.44\%$$
+
+$$\text{Precision} = \frac{\text{TP}}{\text{TP} + \text{FP}} \ge 0.95, \quad \text{Recall} = \frac{\text{TP}}{\text{TP} + \text{FN}} \ge 0.95$$
+
+Model dilatih dengan *Label Smoothing (0.08)* dan *WeightedRandomSampler* untuk menyeimbangkan seluruh kelas dan mengeliminasi saturasi overconfidence 100%.
 
 ### B. Pipeline Chatbot & RAG
-Setiap pesan teks yang masuk melalui antarmuka web ditangkap oleh Django API View, dikonversi menjadi data vektor (*embedding*), dan dicocokkan dengan dokumen pengetahuan budidaya lele menggunakan kueri SQL khusus pada ekstensi PostgreSQL `pgvector` yang dikelola secara langsung melalui migrasi bawaan Django ORM.
+Setiap pesan teks yang masuk melalui antarmuka web ditangkap oleh Django API View, dikonversi menjadi data vektor (*embedding*), dan dicocokkan dengan dokumen pengetahuan budidaya lele. Jika API key eksternal tidak aktif, sistem beralih otomatis ke *Smart Offline Keyword Matcher* berbasis database relasional.
 
 ## 2.4 Kebutuhan Non-Fungsional (Non-Functional Requirements)
 
 | Parameter | Spesifikasi Kebutuhan Teknis Django |
 | :--- | :--- |
-| **Performa (Performance)** | Manajemen aset statis menggunakan WhiteNoise atau AWS S3 via `django-storages`. Kecepatan query database dioptimalkan melalui metode Django ORM `select_related` dan `prefetch_related` untuk menjaga respons API $\le$ 500ms. |
-| **Keamanan (Security)** | Proteksi bawaan terhadap SQL Injection melalui Django ORM parameterized queries. Aktivasi middleware `CsrfViewMiddleware` untuk menangani serangan Cross-Site Request Forgery dan `XFrameOptionsMiddleware` untuk mencegah clickjacking. |
-| **Skalabilitas** | Dukungan penuh containerization menggunakan Docker untuk pembungkusan environment Django, Python, dan dependensi sistem C++ (OpenCV), sehingga mudah di-scale ke arsitektur cloud. |
+| **Performa (Performance)** | Waktu respons inferensi pada CPU $\le 1.0$ detik per gambar. Optimalisasi threading PyTorch multi-core (8 threads pada training, 1 thread pada worker web demi stabilitas). |
+| **Keamanan (Security)** | Proteksi bawaan terhadap SQL Injection melalui Django ORM parameterized queries. Pengaturan CORS terbuka untuk origin SPA serta validasi berkas upload gambar terverifikasi. |
+| **Keandalan & Kalibrasi** | Model tidak menghasilkan probabilitas 100% palsu. Dilengkapi filter *Out-of-Domain* (OOD) untuk menolak gambar non-lele (kardus, screenshot, benda mati). |
+| **Skalabilitas** | Dukungan penuh containerization menggunakan Docker untuk pembungkusan environment Django, Python, PyTorch, dan dependensi OpenCV. |
 
-## 2.5 Skema Data Awal (Django ORM Models Description)
-Representasi entitas data didefinisikan secara langsung melalui kelas-kelas Python Model di Django yang kemudian ditranslasikan otomatis menjadi tabel PostgreSQL:
+## 2.5 Skema Data (Django ORM Models Description)
+Representasi entitas data didefinisikan secara langsung melalui kelas-kelas Python Model di Django:
 
 * **Class User(AbstractUser):** `id`, `nama`, `lokasi_kolam`, `no_telepon`, `tanggal_registrasi`.
-* **Class DetectionLog(models.Model):** `id`, `user` (ForeignKey), `image` (ImageField), `penyakit_terdeteksi` (CharField), `confidence_score` (FloatField), `status_validasi` (BooleanField), `rekomendasi_penanganan` (TextField), `created_at` (DateTimeField).
-* **Class ChatSession(models.Model):** `id`, `user` (ForeignKey), `context_summary` (CharField), `created_at`, `updated_at`.
+* **Class DetectionLog(models.Model):** `id`, `user` (ForeignKey, `null=True, blank=True` untuk mendukung tamu), `image` (ImageField), `penyakit_terdeteksi` (CharField), `confidence_score` (FloatField), `semua_probabilitas` (JSONField), `status_validasi` (BooleanField), `rekomendasi_penanganan` (TextField), `created_at` (DateTimeField).
+* **Class Penyakit(models.Model):** `id`, `nama`, `nama_ilmiah`, `gejala`, `penyebab`, `penanganan`, `pencegahan`.
+* **Class Obat(models.Model):** `id`, `penyakit` (ForeignKey), `nama_obat`, `dosis`, `cara_penggunaan`.
+* **Class ChatSession(models.Model):** `id`, `user` (ForeignKey, `null=True`), `context_summary` (CharField), `created_at`, `updated_at`.
 * **Class ChatMessage(models.Model):** `id`, `session` (ForeignKey), `sender_type` (CharField), `message_text` (TextField), `created_at`.
 
 ## 2.6 Alur Pemrosesan Data Gambar pada Django Backend
-1. Pengguna mengunggah gambar ikan lele lewat form HTML/React Frontend.
-2. Request diterima oleh Django View, lalu divalidasi keamanannya oleh komponen middleware bawaan.
-3. File disimpan temporer di media storage, lalu path file dikirimkan ke modul AI internal berbasis Python.
-4. OpenCV memotong gambar (*preprocessing*) dan memuat model AI untuk kalkulasi klasifikasi penyakit.
-5. Hasil diagnosis dikembalikan sebagai objek data Python, disimpan ke tabel database via Django ORM, dan dikirimkan kembali ke pengguna sebagai response fungsional web.
+1. Pengguna (tamu publik maupun terdaftar) mengunggah gambar ikan lele lewat form web.
+2. Request diterima oleh Django API View (`/api/detection/upload/`), divalidasi format dan integritas filenya.
+3. OpenCV memproses gambar (*resizing $300\times300$*, konversi RGB, normalisasi ImageNet).
+4. Model EfficientNet-B3 mengeksekusi inferensi; probabilitas dihitung menggunakan Softmax standar terkalibrasi.
+5. Jika nilai confidence $< 0.65$ atau entropi $> 0.65$, sistem mengembalikan status **Bukan Lele**.
+6. Hasil diagnosis beserta rekomendasi obat disimpan ke `DetectionLog` dan dikembalikan ke pengguna dalam format JSON instan.
