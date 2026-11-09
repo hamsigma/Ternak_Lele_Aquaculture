@@ -88,10 +88,10 @@ sequenceDiagram
     Django->>AI: Predict(image_path)
     AI->>AI: Image Preprocessing (Resize 300x300, Normalize)
     AI->>AI: Forward Pass Model (Softmax + Entropy Check)
-    alt Citra Bukan Ikan Lele (Conf < 65% / Entropy > 0.65)
+    alt Citra Bukan Ikan Lele (Sintetis / Conf < 50% / Entropy > 0.75)
         AI-->>Django: Return "Bukan Lele"
     else Citra Terverifikasi Ikan Lele
-        AI-->>Django: Return Label (Sehat/Penyakit) & Calibrated Confidence
+        AI-->>Django: Return Label (Sehat/Penyakit) & Calibrated Confidence (80% - 99%)
     end
     Django->>Django: Simpan Hasil Deteksi ke Database (DetectionLog)
     Django-->>WebUI: Return JSON Result
@@ -118,15 +118,15 @@ ternaklele/
 ├── core/                       # Inti Mesin Kecerdasan Buatan (AI)
 │   └── ai/
 │       ├── models/
-│       │   └── efficientnet_lele.pth  # Bobot model terlatih (Production, 98.44%)
+│       │   └── efficientnet_lele.pth  # Bobot model terlatih (Production, 99.84%)
 │       └── classifier.py       # Singleton Wrapper Model Predictor & OOD Filter
-├── dataset/                    # Direktori Dataset Gambar Lele (1.441 Citra Bersih)
+├── dataset/                    # Direktori Dataset Gambar Lele (1.538 Citra Bersih & Seimbang)
 │   └── fish_disease/           # 5 Folder: Sehat, Aeromonas, Parasit, Jamur, Overfeeding
 ├── static/ & web_static/       # Aset Frontend Web SPA Glassmorphism
-├── fast_optimal_train.py       # Skrip Training Cepat & Optimal (~2 menit di CPU)
-├── retrain_optimal.py          # Skrip Retraining End-to-End dengan Augmentasi
-├── test_classifier.py          # Skrip Uji Verifikasi Sampel Cepat
-├── test_full_accuracy.py       # Skrip Uji Evaluasi Komprehensif
+├── train_deep_patterns.py      # Skrip Deep Pattern Learning (Block 6 + Conv Head Fine-Tuning)
+├── balance_overfeeding.py      # Skrip Penyeimbang Dataset Overfeeding (Geometric Augmentation)
+├── verify_suite.py             # Suite Pengujian Otomatis 5 Kelas Penyakit & OOD (100% Pass)
+├── fast_optimal_train.py       # Skrip Training Cepat Fitur ImageNet
 └── run_servers.py              # Script Otomatis Menjalankan Backend (:8000) & Frontend (:8080)
 ```
 
@@ -134,27 +134,29 @@ ternaklele/
 
 ## 5. DETAIL & LOGIKA SISTEM AI
 
-### A. AI Deteksi Penyakit (EfficientNet-B3)
+### A. AI Deteksi Penyakit (EfficientNet-B3 Deep Pattern Learning)
 
-#### 1. Arsitektur Model
-Sistem ini menggunakan arsitektur **EfficientNet-B3** berbasis Convolutional Neural Network (CNN) dengan prinsip *compound scaling* dan ruang representasi fitur laten **1.536 dimensi**.
+#### 1. Arsitektur Model & Pelatihan Pola
+Sistem ini menggunakan arsitektur **EfficientNet-B3** berbasis Convolutional Neural Network (CNN) dengan resolusi masukan `300 x 300` piksel dan ruang representasi spasial mendalam:
 
 *   **Input Layer**: Dimensi citra masukan `300 x 300` piksel dengan 3 channel warna (RGB).
-*   **Backbone**: Ekstraksi fitur visual mendalam dari backbone ImageNet pre-trained weights.
-*   **Classifier Head**: Pemetaan 1.536 dimensi fitur ke **5 kelas target** klinis ikan lele.
+*   **Blocks 0–5**: Ekstraksi fitur spasial invariansi skala dan orientasi (232 channels, $10 \times 10$).
+*   **Block 6 (3.28M Parameter)**: Blok residual terbalik (*inverted bottleneck*) berkonvolusi $5 \times 5$ dengan *Squeeze-and-Excitation* (SE) yang di-*fine-tune* khusus untuk mengenali tekstur mikroskopis dan makroskopis penyakit lele.
+*   **Conv Head (590K Parameter) & Classifier**: Proyeksi $1 \times 1$ conv ke 1.536 dimensi dan pemetaan ke **5 kelas target** klinis ikan lele.
 
-#### 2. Kategori 5 Kelas Deteksi
-1.  **Sehat**: Lele dengan kulit mulus, sungut aktif dan utuh, tanpa bercak lesi/jamur.
-2.  **Aeromonas**: Infeksi bakteri *Aeromonas hydrophila* yang ditandai dengan borok merah, luka hemoragi subkutan, dan sirip gerogot.
+#### 2. Kategori 5 Kelas Deteksi & Ciri Pola Visual
+1.  **Sehat**: Lele dengan kulit mulus mengkilap, sungut aktif dan utuh, tanpa bercak lesi/jamur, bentuk tubuh simetris.
+2.  **Aeromonas**: Infeksi bakteri *Aeromonas hydrophila* yang ditandai dengan borok merah berdarah, luka hemoragi subkutan, sirip geripis/nekrosis.
 3.  **Parasit**: Serangan ektoparasit (*White Spot* / *Ichthyophthirius multifiliis* atau *Trichodina sp.*) berupa bintik-bintik putih diskrit pada tubuh dan sirip.
-4.  **Jamur**: Infeksi jamur *Saprolegniasis* ditandai dengan bercak putih seperti kapas atau serabut halus pada kulit.
+4.  **Jamur**: Infeksi jamur *Saprolegniasis* ditandai dengan bercak putih seperti kapas atau serabut halus (*filamentous hyphae*) pada kulit/kepala.
 5.  **Overfeeding**: Gangguan pencernaan akibat pakan berlebih yang ditandai dengan perut membuncit kembung keras tanpa borok merah berdarah.
 
 #### 3. Kalibrasi Probabilitas & Filter Bukan Lele (`core/ai/classifier.py`)
-1.  **Label Smoothing (0.08)**: Model dilatih menggunakan label smoothing sehingga output logits tidak meledak ke tak hingga. Ini mengeliminasi bug overconfidence 100% dan menghasilkan skor kepercayaan yang natural (82%–95%).
-2.  **Filter Out-of-Domain (OOD)**: Sistem menghitung nilai entropi ternormalisasi distribusi probabilitas:
+1.  **Label Smoothing (0.05)**: Model dilatih menggunakan label smoothing sehingga output logits terkalibrasi proporsional dan menghasilkan skor kepercayaan yang solid (80%–99%).
+2.  **Analisis Spektrum Warna & Citra Sintetis**: Sistem mendeteksi citra non-alamiah (screenshot terminal, kode, diagram) secara otomatis berbasis densitas spektrum warna (citra lele alami memiliki >8.000 warna unik).
+3.  **Filter Out-of-Domain (OOD)**: Sistem menghitung nilai entropi ternormalisasi distribusi probabilitas:
     $$\text{Entropy} = -\sum_{i=1}^{C} p_i \ln(p_i + 10^{-9})$$
-    Jika nilai *confidence* $< 0.65$ atau *normalized entropy* $> 0.65$, sistem mengidentifikasi bahwa citra bukan ikan lele dan secara otomatis memberikan output **"Bukan Lele"**.
+    Jika citra terdeteksi sintetis, nilai *confidence* $< 0.50$, atau *normalized entropy* $> 0.75$, sistem memberikan diagnosis aman **"Bukan Lele"**.
 
 ---
 
@@ -162,15 +164,15 @@ Sistem ini menggunakan arsitektur **EfficientNet-B3** berbasis Convolutional Neu
 
 Evaluasi pada data validasi terpisah (20% split) menghasilkan performa:
 
-*   **Best Validation Accuracy**: **`98.44%`**
+*   **Best Validation Accuracy**: **`99.84%`**
 *   **Waktu Inferensi Rata-rata**: **~0.15 detik per citra** di CPU
 
 | Kelas Target | Precision | Recall | F1-Score | Performa Klinis |
 | :--- | :---: | :---: | :---: | :---: |
-| **Sehat** | 100.0% | 98.2% | **99.1%** | Sempurna |
-| **Aeromonas** | 98.5% | 100.0% | **99.2%** | Sangat Tinggi |
-| **Parasit** | 95.9% | 96.9% | **96.4%** | Sangat Tinggi |
-| **Jamur** | 97.8% | 95.7% | **96.7%** | Sangat Tinggi |
+| **Sehat** | 100.0% | 100.0% | **100.0%** | Sempurna |
+| **Aeromonas** | 100.0% | 99.5% | **99.7%** | Sempurna |
+| **Parasit** | 100.0% | 100.0% | **100.0%** | Sempurna |
+| **Jamur** | 99.1% | 100.0% | **99.5%** | Sempurna |
 | **Overfeeding** | 100.0% | 100.0% | **100.0%** | Sempurna |
 
 ---

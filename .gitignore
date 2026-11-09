@@ -71,6 +71,8 @@ logs/
 *_output.txt
 *.parquet
 *.tmp
+dataset/
+**/dataset/
 
 # ==========================================
 # IDE & Editor Settings

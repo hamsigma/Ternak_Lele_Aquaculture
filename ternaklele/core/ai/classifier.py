@@ -104,16 +104,28 @@ class LeleClassifier:
     def _preprocess_opencv(self, image_path: str):
         """
         Preprocessing gambar: OpenCV (utama) → PIL fallback.
-        Pipeline: load → RGB → resize → normalize → tensor
+        Pipeline: load → analisis spektrum warna → RGB → resize → normalize → tensor
         """
         import numpy as np
         import torch
 
+        is_synthetic = False
         try:
             import cv2
             img = cv2.imread(image_path)
             if img is None:
                 raise ValueError(f"OpenCV gagal baca: {image_path}")
+
+            # Deteksi citra sintetis/non-alamiah (screenshot IDE/terminal, dokumen teks, atau gambar hitam pekat/putih polos)
+            mean_val = float(img.mean())
+            if mean_val < 15.0 or mean_val > 242.0:
+                is_synthetic = True
+            else:
+                small = img[::4, ::4]
+                unique_colors = len(np.unique(small.reshape(-1, 3), axis=0))
+                if unique_colors < 150:
+                    is_synthetic = True
+
             img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
             img = cv2.resize(img, self.INPUT_SIZE, interpolation=cv2.INTER_AREA)
         except Exception:
@@ -122,6 +134,7 @@ class LeleClassifier:
             img = Image.open(image_path).convert("RGB")
             img = img.resize(self.INPUT_SIZE)
             img = np.array(img)
+            is_synthetic = False
 
         # Normalize ke [0, 1]
         img = img.astype(np.float32) / 255.0
@@ -133,7 +146,7 @@ class LeleClassifier:
 
         # HWC → CHW → batch
         tensor = torch.from_numpy(img.transpose(2, 0, 1)).unsqueeze(0)
-        return tensor.to(self.device)
+        return tensor.to(self.device), is_synthetic
 
     def predict(self, image_path: str) -> dict:
         """
@@ -158,7 +171,7 @@ class LeleClassifier:
             import torch.nn.functional as F
             import math
 
-            tensor = self._preprocess_opencv(image_path)
+            tensor, is_synthetic = self._preprocess_opencv(image_path)
 
             with torch.no_grad():
                 raw_logits = self.model(tensor)
@@ -182,12 +195,13 @@ class LeleClassifier:
             max_entropy = math.log(len(self.class_labels))
             normalized_entropy = entropy / max_entropy if max_entropy > 0 else 0
 
-            # Deteksi Out of Domain (gambar bukan lele / objek lain)
-            # Gambar lele memiliki keyakinan tinggi (>= 80%) & entropi rendah (<= 0.45)
-            # Gambar bukan lele memiliki keyakinan rendah (< 65%) & entropi tinggi (> 0.65)
-            if confidence < 0.65 or normalized_entropy > 0.65:
+            # Deteksi Out of Domain (gambar bukan lele / objek lain / screenshot):
+            # 1. Citra sintetis non-alamiah (terminal, screenshot, diagram monokrom)
+            # 2. Keyakinan rendah (< 50% pada 5 kelas) atau entropi sangat tinggi (> 0.75)
+            if is_synthetic or confidence < 0.50 or normalized_entropy > 0.75:
                 logger.info(
-                    f"Ketidakpastian tinggi: confidence={round(confidence*100,1)}% "
+                    f"Out-of-Domain: is_synthetic={is_synthetic}, "
+                    f"confidence={round(confidence*100,1)}% "
                     f"entropy={round(normalized_entropy,3)} → 'Bukan Lele'."
                 )
                 return {

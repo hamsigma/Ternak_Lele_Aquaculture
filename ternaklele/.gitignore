@@ -39,6 +39,7 @@ stage_*_checkpoint.pth
 
 # Data cache
 *.parquet
+dataset/
 
 # Virtual environment
 venv/
