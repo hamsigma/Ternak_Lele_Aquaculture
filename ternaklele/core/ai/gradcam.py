@@ -117,3 +117,29 @@ class GradCAM:
             blended = Image.blend(orig_pil, colored_cam_pil, alpha=alpha)
             return np.array(blended.convert("RGB"))
 
+
+def create_gradcam_overlay_file(model, tensor_input, original_img_path: str, target_class_idx: int, output_save_path: str) -> bool:
+    """
+    Menghasilkan file gambar visualisasi Grad-CAM pada output_save_path.
+    Mengembalikan True jika sukses.
+    """
+    from pathlib import Path
+    gradcam = None
+    try:
+        gradcam = GradCAM(model)
+        heatmap, _ = gradcam.generate_heatmap(tensor_input, target_class_idx)
+        overlay_rgb = gradcam.overlay_heatmap_on_image(original_img_path, heatmap)
+
+        save_p = Path(output_save_path)
+        save_p.parent.mkdir(parents=True, exist_ok=True)
+        Image.fromarray(overlay_rgb).save(str(save_p), format="JPEG", quality=92)
+        return True
+    except Exception as e:
+        import logging
+        logging.getLogger(__name__).error(f"Gagal generate Grad-CAM: {e}", exc_info=True)
+        return False
+    finally:
+        if gradcam is not None:
+            gradcam.remove_hooks()
+
+

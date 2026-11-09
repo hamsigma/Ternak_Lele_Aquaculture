@@ -15,6 +15,7 @@ Platform web cerdas terintegrasi berbasis AI untuk deteksi penyakit ikan lele (*
    - [Asisten AI RAG (Chatbot Leli)](#c-asisten-ai-rag-chatbot-leli)
 6. [Setup & Panduan Instalasi](#6-setup--panduan-instalasi)
 7. [Panduan Training & Evaluasi Model](#7-panduan-training--evaluasi-model)
+8. [Referensi Ilmiah & Studi Terkait (Academic References)](#8-referensi-ilmiah--studi-terkait-academic-references)
 
 ---
 
@@ -189,9 +190,14 @@ Jamur      :    0          2        0     23            0
 Overfeeding:    0          0        0      0            4
 ```
 
-#### Modul Visualisasi Grad-CAM (`core/ai/gradcam.py`):
-Sistem dilengkapi modul explainability berbasis **Grad-CAM (Gradient-weighted Class Activation Mapping)** pada layer konvolusi `conv_head` untuk memverifikasi secara visual bahwa fokus perhatian model tertuju pada lesi patologis lele (luka borok, hifa jamur, bintik parasit, atau distensi perut), bukan pada latar belakang air kolam atau ember.
+#### Modul Visualisasi Spasial Grad-CAM (`core/ai/gradcam.py`):
+Sistem dilengkapi modul interpretabilitas berbasis **Grad-CAM (Gradient-weighted Class Activation Mapping)** yang dieksekusi langsung pada layer konvolusi `conv_head` (1.536 dimensi). Fitur ini terintegrasi ke antarmuka web, memungkinkan pengguna beralih (*toggle switch*) antara **Foto Asli** dan **Heatmap AI (Grad-CAM)** untuk memverifikasi secara visual bahwa keputusan model didasarkan pada lesi patologis lele (misal borok merah, serabut jamur, bintik parasit, atau kurvatur perut membuncit), bukan terdistorsi oleh latar belakang air kolam atau tangan.
 
+#### Protokol Triase Klinis & Peringatan Keselamatan (Clinical Safety Protocol):
+Untuk mencegah risiko ketergantungan buta pada AI, sistem menyertakan protokol triase keselamatan berbasis temuan patologis veteriner:
+1.  **Peringatan Observasi Manual (< 80%)**: Jika skor keyakinan model berada di bawah 80%, sistem memunculkan peringatan otomatis agar peternak melakukan pengamatan perilaku renang ikan, nafsu makan, dan mengecek parameter air kolam secara manual.
+2.  **Protokol Triase Darurat Aeromonas hydrophila**: Merujuk pada fakta bahwa bakteri *Aeromonas* memicu *Motile Aeromonas Septicemia (MAS)* dengan tingkat mortalitas $LD_{50}$ sangat cepat (Mohamad et al., 2022), jika probabilitas terdeteksi $\ge 12\%$, sistem mengaktifkan protokol karantina lele darurat, anjuran pengurasan air 30–50%, serta pemberian garam ikan non-beryodium.
+3.  **Peringatan Tata Kelola Pakan (Overfeeding)**: Jika terdeteksi perut buncit tanpa borok pendarahan, sistem memberikan panduan puasa 24 jam dan pembersihan endapan feses/pelet sesuai acuan budidaya (Dwi Apriyani, 2025).
 
 ---
 
@@ -246,30 +252,75 @@ python run_servers.py
 
 ## 7. PANDUAN TRAINING & EVALUASI MODEL
 
+Seluruh skrip otomasi pipeline telah dirapikan ke dalam folder `ternaklele/scripts/` dengan dokumentasi lengkap di `scripts/README.md`.
+
 ### 7.1 Struktur Dataset
-Dataset berada di `ternaklele/dataset/fish_disease/` yang terbagi rapi ke dalam 5 folder kelas: `Sehat`, `Aeromonas`, `Parasit`, `Jamur`, dan `Overfeeding` (total 1.441 citra bersih dan terkurasi).
+Dataset berada di `ternaklele/dataset/fish_disease/` yang terbagi ke dalam 5 folder kelas: `Sehat`, `Aeromonas`, `Parasit`, `Jamur`, dan `Overfeeding` (total 1.538 citra bersih dan terkurasi).
 
-### 7.2 Menjalankan Fast Optimal Training (Direkomendasikan)
-Melatih model secara cepat (~2 menit di CPU) menggunakan ekstraksi fitur ImageNet pre-trained, augmentasi ganda, dan pelatihan classifier head 80 epoch:
+### 7.2 Menjalankan Training Bebas Kebocoran (*Zero-Leakage Pipeline*)
+Melatih model EfficientNet-B3 dengan protokol pemisahan grup subjek induk (*Strict Subject Group Split: 75% Train, 15% Val, 10% Test*) tanpa kontaminasi augmentasi pada data uji:
 ```bash
-python fast_optimal_train.py
+python scripts/training/train_rigorous.py
+```
+*Bobot model optimal akan otomatis disimpan ke `core/ai/models/efficientnet_lele.pth`.*
+
+### 7.3 Penyeimbangan Citra Kelas Overfeeding
+Memperluas sampel variasi rotasi dan kontras kelas overfeeding yang minim:
+```bash
+python scripts/training/balance_overfeeding.py
 ```
 
-### 7.3 Menjalankan Retraining Penuh (End-to-End Fine-Tuning)
-Melatih blok konvolusi atas dan classifier head secara serempak:
+### 7.4 Verifikasi Suite & Uji Akurasi Menyeluruh
+Menjalankan pengujian 5 kelas penyakit klinis, evaluasi citra non-lele (OOD), dan verifikasi visualisasi Grad-CAM:
 ```bash
-python retrain_optimal.py
+python scripts/evaluation/verify_suite.py
+```
+Uji akurasi komprehensif pada seluruh dataset murni:
+```bash
+python scripts/evaluation/test_full_accuracy.py
 ```
 
-### 7.4 Menguji Akurasi Model
-Uji inferensi langsung pada sampel lele riil dan filter bukan lele:
-```bash
-python test_classifier.py
-```
-Uji akurasi komprehensif pada seluruh dataset:
-```bash
-python test_full_accuracy.py
-```
+---
+
+## 8. REFERENSI ILMIAH & STUDI TERKAIT (ACADEMIC REFERENCES)
+
+Pengembangan sistem **Ternak Lele** didasarkan pada tinjauan pustaka akademik, riset veteriner, dan studi kecerdasan buatan terindeks:
+
+1.  **Nadhiroh, A. A., Harmini, T., & Kurniawan, W. (2024).**  
+    *Deteksi Penyakit Bakteri Aeromonas Hydrophila Pada Ikan Air Tawar Menggunakan Metode Convolutional Neural Network.*  
+    **Jurnal TEKNOLOGI NUSANTARA**, 6(2), 56–66. E-ISSN: 2964-4577.  
+    *   **Fokus & Temuan**: Membangun model transfer learning MobileNetV2 dan InceptionV3 untuk 3 kondisi (*Aeromonas hydrophila*, *White Spot*, dan Sehat). Mencapai akurasi 80.0%, presisi 100%, recall 67.0%, dan F1-score 80.0%.  
+    *   **Evaluasi Kritis & Kontribusi Ternak Lele**: Riset ini memiliki kelemahan signifikan pada nilai recall yang rendah (67.0%), yang mengindikasikan banyaknya kasus *false negative* di mana ikan sakit salah terdeteksi sebagai sehat akibat distorsi pencahayaan dan pantulan air kolam. Sistem **Ternak Lele** mengatasi cela ini dengan menggunakan arsitektur **EfficientNet-B3** ($300 \times 300$ px), memperluas cakupan menjadi 5 kelas (+ Jamur & Overfeeding), serta menerapkan pemisahan data berbasis grup subjek tanpa kebocoran augmentasi sehingga recall uji buta meningkat tajam menjadi **96.0% (Aeromonas)** dan **100.0% (Parasit)**.
+
+2.  **Kavya, T. M., Hitha, B. M., Radhika, S. L., Medhavi, L. M., Neha, N., & Archana, P. (2025).**  
+    *A Deep Learning Method for Identifying and Categorizing Fish Diseases in Aquaculture Systems.*  
+    **2025 IEEE 4th International Conference for Advancement in Technology (ICONAT)**, Goa, India, pp. 1–6. DOI: [10.1109/ICONAT66879.2025.11362531](https://doi.org/10.1109/ICONAT66879.2025.11362531).  
+    *   **Fokus & Temuan**: Mengusulkan arsitektur hibrida VGG16 (feature extractor) + Support Vector Machine (SVM) untuk klasifikasi 7 penyakit ikan air tawar dengan akurasi 92.0%.  
+    *   **Adopsi pada Ternak Lele**: Platform Ternak Lele mengadopsi 2 rekomendasi krusial dari paper IEEE ini:  
+        a.  *Fish Presence Verification Mechanism*: Diimplementasikan melalui filter spektral warna alami dan entropi Shannon pada [classifier.py](file:///c:/Users/Administrator/Documents/Tenak%20Lele/ternaklele/core/ai/classifier.py) untuk menolak citra non-ikan ("Bukan Lele").  
+        b.  *Intermediate CNN Layer Visualization*: Diimplementasikan melalui modul [gradcam.py](file:///c:/Users/Administrator/Documents/Tenak%20Lele/ternaklele/core/ai/gradcam.py) untuk transparansi explainable AI di antarmuka web.
+
+3.  **Aryanti, R., & Wibowo, A. P. W. (2025).**  
+    *Building a fish disease detection application based on Smart Fishery with Image Processing and Deep Learning.*  
+    **Brilliance: Research of Artificial Intelligence**, 5(1), 66–73. DOI: [10.47709/brilliance.v5i1.5719](https://doi.org/10.47709/brilliance.v5i1.5719).  
+    *   **Fokus & Temuan**: Mengembangkan aplikasi Smart Fishery menggunakan ekstraksi fitur tekstur GLCM (*Contrast, Correlation, Energy, Entropy, Homogeneity*) dan Neural Network/SVM pada nila dan lele (akurasi 88%–95%).  
+    *   **Adopsi pada Ternak Lele**: Menegaskan karakteristik morfologi lele (*Clarias*) yang tidak bersisik dan berlendir, sehingga lesi penyakit kulit terlihat langsung pada epidermis namun rentan terhadap kekeruhan air dan partikel pakan. Ini melandasi pemilihan augmentasi non-destruktif (*ColorJitter* moderat) untuk menjaga integritas fitur warna luka.
+
+4.  **Mohamad, N. F. A., Daud, H. M., & Manaf, S. R. (2022).**  
+    *Pathogenicity of Aeromonas hydrophila in Cultured African Catfish (Clarias gariepinus).*  
+    **Journal of Smart Science and Technology**, 2(1), 34–45. DOI: [10.24191/jsst.v2i1.25](https://doi.org/10.24191/jsst.v2i1.25).  
+    *   **Fokus & Temuan**: Studi patogenisitas klinis dan histopatologi *Aeromonas hydrophila* pada *Clarias gariepinus*. Menemukan nilai $LD_{50}$ pada $2.1 \times 10^6$ CFU/mL dengan mortalitas 100% pada dosis $10^8$ CFU/mL dalam 96 jam. Lesi klinis makroskopis mencakup hemoragi pangkal sirip pektoral/pelvis, hiperemia sirip ekor, pendarahan operkulum, dan ulkus nekrotik.  
+    *   **Adopsi pada Ternak Lele**: Menjadi landasan patologis validasi fitur visual kelas `Aeromonas` serta perancangan **Protokol Triase Darurat Aeromonas** di antarmuka web (karantina instan, pergantian air 30–50%, perendaman garam) jika probabilitas terdeteksi $\ge 12\%$.
+
+5.  **Apriyani, D. (2025).**  
+    *Teknik Pembesaran Ikan Lele Mutiara (Clarias gariepinus).*  
+    Laporan Tugas Akhir, Program Studi Budidaya Perikanan, Jurusan Perikanan dan Kelautan, **Politeknik Negeri Lampung**, Bandar Lampung.  
+    *   **Fokus & Temuan**: Evaluasi teknik pembesaran lele mutiara sistem intensif selama 72 hari, manajemen pakan *Ad-Satiation* (3 kali sehari, protein 31%), dan pemantauan kualitas air harian (suhu 27–30°C, pH 6.5–8.0, DO > 3–5 mg/L, amonia < 0.1 mg/L).  
+    *   **Adopsi pada Ternak Lele**: Menjadi dasar ilmiah untuk pemodelan kelas non-infeksius `Overfeeding` (distensi perut tanpa lesi berdarah akibat pelet mengembang di lambung), pencegahan lonjakan amonia akibat sisa pakan, dan penyusunan basis pengetahuan obat/probiotik pada modul edukasi.
+
+6.  **Silabus & Rubrik Proyek Pengenalan Pola (2025).**  
+    *Panduan Standar Kurikulum Proyek Pengenalan Pola (Pattern Recognition).*  
+    *   **Fokus**: Format baku 5 bab penilaian (@20%): Pendahuluan & Rumusan Masalah, Dasar Teori & Siklus Pengenalan Pola, Metodologi & Preprocessing Data, Eksperimen & Analisis Confusion Matrix (target akurasi $\ge 85\%$), serta Kesimpulan & Rekomendasi Masa Depan.
 
 ---
 *Ternak Lele — Membantu Pembudidaya Lele Indonesia dengan Kekuatan Teknologi AI.* 🇮🇩🐟

@@ -471,6 +471,91 @@ function displayDetectionResult(result) {
     
     const penyakitNama = result.penyakit_terdeteksi;
 
+    // Triage Warning Banner
+    const triageContainer = document.getElementById("res-triage-container");
+    const triageTextEl = document.getElementById("res-triage-text");
+    if (triageContainer && triageTextEl) {
+        if (result.triage_warning && result.triage_warning.trim().length > 0) {
+            triageTextEl.innerText = result.triage_warning;
+            triageContainer.style.display = "block";
+            const iconEl = triageContainer.querySelector("i");
+            const headerEl = triageContainer.querySelector("span");
+            if (result.triage_warning.includes("PROTOKOL TRIASE DARURAT")) {
+                triageContainer.style.background = "rgba(239, 68, 68, 0.18)";
+                triageContainer.style.borderColor = "rgba(239, 68, 68, 0.5)";
+                if (iconEl) iconEl.style.color = "#f87171";
+                if (headerEl) headerEl.style.color = "#f87171";
+                triageTextEl.style.color = "#fca5a5";
+            } else {
+                triageContainer.style.background = "rgba(245, 158, 11, 0.12)";
+                triageContainer.style.borderColor = "rgba(245, 158, 11, 0.35)";
+                if (iconEl) iconEl.style.color = "#fbbf24";
+                if (headerEl) headerEl.style.color = "#fbbf24";
+                triageTextEl.style.color = "#fef3c7";
+            }
+        } else {
+            triageContainer.style.display = "none";
+        }
+    }
+
+    // Grad-CAM Explainability Viewer
+    const camContainer = document.getElementById("res-cam-container");
+    const camImg = document.getElementById("res-cam-img");
+    const camTag = document.getElementById("res-cam-tag");
+    const btnOrig = document.getElementById("btn-toggle-orig");
+    const btnCam = document.getElementById("btn-toggle-cam");
+
+    if (camContainer && camImg) {
+        if (result.heatmap_image) {
+            camContainer.style.display = "block";
+            camImg.src = result.heatmap_image;
+            if (camTag) camTag.innerText = "Heatmap AI";
+
+            if (btnOrig && btnCam) {
+                btnCam.style.display = "inline-block";
+                btnCam.style.background = "var(--primary)";
+                btnCam.style.color = "#000";
+                btnCam.style.fontWeight = "600";
+                btnOrig.style.background = "rgba(255,255,255,0.1)";
+                btnOrig.style.color = "#fff";
+                btnOrig.style.fontWeight = "normal";
+
+                btnOrig.onclick = () => {
+                    camImg.src = result.image;
+                    if (camTag) camTag.innerText = "Foto Asli";
+                    btnOrig.style.background = "var(--primary)";
+                    btnOrig.style.color = "#000";
+                    btnOrig.style.fontWeight = "600";
+                    btnCam.style.background = "rgba(255,255,255,0.1)";
+                    btnCam.style.color = "#fff";
+                    btnCam.style.fontWeight = "normal";
+                };
+
+                btnCam.onclick = () => {
+                    camImg.src = result.heatmap_image;
+                    if (camTag) camTag.innerText = "Heatmap AI";
+                    btnCam.style.background = "var(--primary)";
+                    btnCam.style.color = "#000";
+                    btnCam.style.fontWeight = "600";
+                    btnOrig.style.background = "rgba(255,255,255,0.1)";
+                    btnOrig.style.color = "#fff";
+                    btnOrig.style.fontWeight = "normal";
+                };
+            }
+        } else if (result.image && penyakitNama !== "Bukan Lele") {
+            camContainer.style.display = "block";
+            camImg.src = result.image;
+            if (camTag) camTag.innerText = "Foto Asli";
+            if (btnCam) btnCam.style.display = "none";
+            if (btnOrig) {
+                btnOrig.style.background = "var(--primary)";
+                btnOrig.style.color = "#000";
+            }
+        } else {
+            camContainer.style.display = "none";
+        }
+    }
+
     if (penyakitNama === "Bukan Lele" || penyakitNama === "Bukan_Lele") {
         labelEl.innerText = "Tidak Dikenali";
         badgeEl.innerText = "Bukan Lele";

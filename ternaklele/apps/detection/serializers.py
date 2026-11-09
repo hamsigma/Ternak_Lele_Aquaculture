@@ -14,14 +14,14 @@ class DetectionLogSerializer(serializers.ModelSerializer):
     class Meta:
         model = DetectionLog
         fields = [
-            "id", "user_username", "image", "penyakit_terdeteksi",
+            "id", "user_username", "image", "heatmap_image", "penyakit_terdeteksi",
             "confidence_score", "confidence_persen", "semua_probabilitas",
-            "rekomendasi_penanganan", "status_validasi", "status_proses",
+            "rekomendasi_penanganan", "triage_warning", "status_validasi", "status_proses",
             "catatan_pakar", "created_at",
         ]
         read_only_fields = [
-            "penyakit_terdeteksi", "confidence_score", "semua_probabilitas",
-            "rekomendasi_penanganan", "status_proses", "created_at", "user_username",
+            "heatmap_image", "penyakit_terdeteksi", "confidence_score", "semua_probabilitas",
+            "rekomendasi_penanganan", "triage_warning", "status_proses", "created_at", "user_username",
             "confidence_persen",
         ]
 

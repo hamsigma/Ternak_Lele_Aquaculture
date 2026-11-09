@@ -220,6 +220,21 @@ class LeleClassifier:
             logger.error(f"Error saat inferensi pada {image_path}: {e}")
             raise
 
+    def generate_heatmap(self, image_path: str, target_label: str, output_path: str) -> bool:
+        """
+        Menghasilkan file visualisasi Grad-CAM untuk gambar yang diberikan.
+        """
+        if self.model is None or target_label not in self.class_labels:
+            return False
+        try:
+            from core.ai.gradcam import create_gradcam_overlay_file
+            tensor, _ = self._preprocess_opencv(image_path)
+            target_idx = self.class_labels.index(target_label)
+            return create_gradcam_overlay_file(self.model, tensor, image_path, target_idx, output_path)
+        except Exception as e:
+            logger.error(f"Gagal generate heatmap di classifier: {e}")
+            return False
+
     def _dummy_result(self) -> dict:
         return {
             "label": "Sehat",

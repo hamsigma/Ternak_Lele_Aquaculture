@@ -17,10 +17,12 @@ class DetectionLog(models.Model):
         blank=True
     )
     image = models.ImageField(upload_to="deteksi/%Y/%m/")
+    heatmap_image = models.ImageField(upload_to="deteksi/heatmaps/%Y/%m/", null=True, blank=True)
     penyakit_terdeteksi = models.CharField(max_length=100, blank=True)
     confidence_score = models.FloatField(null=True, blank=True)
     semua_probabilitas = models.JSONField(default=dict, blank=True)
     rekomendasi_penanganan = models.TextField(blank=True)
+    triage_warning = models.TextField(blank=True, help_text="Catatan peringatan keselamatan klinis / triase Aeromonas")
     status_validasi = models.BooleanField(
         null=True,
         blank=True,
