@@ -48,14 +48,14 @@ Keunggulan utama arsitektur Django dalam sistem ini adalah kemampuan eksekusi pu
 
 ## 2.3 Spesifikasi Algoritma & Komponen AI
 
-### A. Klasifikasi dan Deteksi Penyakit Citra (Deep Pattern Learning)
-Model visi komputer menggunakan arsitektur deep learning **EfficientNet-B3** ($300 \times 300$ px) yang di-*fine-tune* mendalam pada Block 6 konvolusional (3.28M parameter), Conv Head (590K parameter), dan Classifier Head pada dataset seimbang 1.538 citra. Model di-host langsung dalam memori worker backend menggunakan *Singleton Pattern*. Nilai metrik performa matematika dari model telah diverifikasi mencapai:
+### A. Klasifikasi dan Deteksi Penyakit Citra (Zero-Leakage Deep Pattern Learning)
+Model visi komputer menggunakan arsitektur deep learning **EfficientNet-B3** ($300 \times 300$ px) yang di-*fine-tune* pada Block 6 konvolusional (3.28M parameter), Conv Head (590K parameter), dan Classifier Head dengan protokol pemisahan subjek ketat (*Zero Data Leakage*). Dilengkapi modul interpretabilitas **Grad-CAM** untuk memvalidasi fokus spasial konvolusi. Nilai metrik performa matematika dari model telah diverifikasi mencapai:
 
-$$\text{Accuracy} = \frac{\text{TP} + \text{TN}}{\text{TP} + \text{TN} + \text{FP} + \text{FN}} = 99.84\%$$
+$$\text{Test Accuracy (Independent Blind Test)} = \frac{\text{TP} + \text{TN}}{\text{TP} + \text{TN} + \text{FP} + \text{FN}} = 96.12\%$$
 
-$$\text{Precision} \ge 0.991, \quad \text{Recall} \ge 0.995, \quad \text{F1-Score} \ge 0.995$$
+$$\text{Validation Accuracy (Pure Data)} = 96.40\%, \quad \text{Precision} \ge 0.920, \quad \text{Recall} \ge 0.920, \quad \text{F1-Score} \ge 0.920$$
 
-Model dilatih dengan *Label Smoothing (0.05)*, *CosineAnnealingLR*, dan *WeightedRandomSampler* untuk menyeimbangkan seluruh kelas, mengeliminasi saturasi overconfidence 100%, serta memetakan pola visual spesifik setiap penyakit.
+Model dilatih dengan *Label Smoothing (0.05)*, *CosineAnnealingLR*, dan *WeightedRandomSampler* untuk menyeimbangkan seluruh kelas, mengeliminasi saturasi overconfidence 100%, serta memetakan pola visual spesifik setiap penyakit tanpa kontaminasi data.
 
 ### B. Pipeline Chatbot & RAG
 Setiap pesan teks yang masuk melalui antarmuka web ditangkap oleh Django API View, dikonversi menjadi data vektor (*embedding*), dan dicocokkan dengan dokumen pengetahuan budidaya lele. Jika API key eksternal tidak aktif, sistem beralih otomatis ke *Smart Offline Keyword Matcher* berbasis database relasional.

@@ -118,15 +118,15 @@ ternaklele/
 ├── core/                       # Inti Mesin Kecerdasan Buatan (AI)
 │   └── ai/
 │       ├── models/
-│       │   └── efficientnet_lele.pth  # Bobot model terlatih (Production, 99.84%)
-│       └── classifier.py       # Singleton Wrapper Model Predictor & OOD Filter
+│       │   └── efficientnet_lele.pth  # Bobot model terlatih (Production, 96.12% Test Acc)
+│       ├── classifier.py       # Singleton Wrapper Model Predictor & OOD Filter
+│       └── gradcam.py          # Generator Visualisasi Heatmap Explainability Grad-CAM
 ├── dataset/                    # Direktori Dataset Gambar Lele (1.538 Citra Bersih & Seimbang)
 │   └── fish_disease/           # 5 Folder: Sehat, Aeromonas, Parasit, Jamur, Overfeeding
 ├── static/ & web_static/       # Aset Frontend Web SPA Glassmorphism
-├── train_deep_patterns.py      # Skrip Deep Pattern Learning (Block 6 + Conv Head Fine-Tuning)
+├── train_rigorous.py           # Skrip Pelatihan Ketat Bebas Kebocoran (Strict Zero-Leakage)
 ├── balance_overfeeding.py      # Skrip Penyeimbang Dataset Overfeeding (Geometric Augmentation)
 ├── verify_suite.py             # Suite Pengujian Otomatis 5 Kelas Penyakit & OOD (100% Pass)
-├── fast_optimal_train.py       # Skrip Training Cepat Fitur ImageNet
 └── run_servers.py              # Script Otomatis Menjalankan Backend (:8000) & Frontend (:8080)
 ```
 
@@ -160,20 +160,35 @@ Sistem ini menggunakan arsitektur **EfficientNet-B3** berbasis Convolutional Neu
 
 ---
 
-### B. Metrik Evaluasi & Performa Nyata
+### B. Metrik Evaluasi & Uji Buta Murni (*Zero-Leakage Benchmark*)
 
-Evaluasi pada data validasi terpisah (20% split) menghasilkan performa:
+Evaluasi menggunakan protokol pemisahan ketat (*Strict Subject Group Split*) tanpa kebocoran data (*zero augmentation leakage*), diuji langsung pada **129 citra uji buta independen (*Unseen Independent Test Set*)**:
 
-*   **Best Validation Accuracy**: **`99.84%`**
+*   **Akurasi Data Uji Independen (*Test Accuracy*)**: **`96.12%`** (124/129 citra terklasifikasi tepat)
+*   **Akurasi Validasi Murni (*Pure Val Accuracy*)**: **`96.40%`**
 *   **Waktu Inferensi Rata-rata**: **~0.15 detik per citra** di CPU
 
 | Kelas Target | Precision | Recall | F1-Score | Performa Klinis |
 | :--- | :---: | :---: | :---: | :---: |
-| **Sehat** | 100.0% | 100.0% | **100.0%** | Sempurna |
-| **Aeromonas** | 100.0% | 99.5% | **99.7%** | Sempurna |
+| **Sehat** | 96.0% | 96.0% | **96.0%** | Sangat Tinggi |
+| **Aeromonas** | 96.0% | 96.0% | **96.0%** | Sangat Tinggi |
 | **Parasit** | 100.0% | 100.0% | **100.0%** | Sempurna |
-| **Jamur** | 99.1% | 100.0% | **99.5%** | Sempurna |
+| **Jamur** | 92.0% | 92.0% | **92.0%** | Tinggi |
 | **Overfeeding** | 100.0% | 100.0% | **100.0%** | Sempurna |
+
+#### Matriks Kebingungan (*Confusion Matrix*) Data Uji Buta:
+```text
+Prediksi -> Sehat  Aeromonas  Parasit  Jamur  Overfeeding
+Sehat      :   24          0        0      1            0
+Aeromonas  :    1         48        0      1            0
+Parasit    :    0          0       25      0            0
+Jamur      :    0          2        0     23            0
+Overfeeding:    0          0        0      0            4
+```
+
+#### Modul Visualisasi Grad-CAM (`core/ai/gradcam.py`):
+Sistem dilengkapi modul explainability berbasis **Grad-CAM (Gradient-weighted Class Activation Mapping)** pada layer konvolusi `conv_head` untuk memverifikasi secara visual bahwa fokus perhatian model tertuju pada lesi patologis lele (luka borok, hifa jamur, bintik parasit, atau distensi perut), bukan pada latar belakang air kolam atau ember.
+
 
 ---
 
