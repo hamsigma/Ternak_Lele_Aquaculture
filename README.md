@@ -15,7 +15,7 @@ Platform web cerdas terintegrasi berbasis AI untuk deteksi penyakit ikan lele (*
    - [Asisten AI RAG (Chatbot Leli)](#c-asisten-ai-rag-chatbot-leli)
 6. [Setup & Panduan Instalasi](#6-setup--panduan-instalasi)
 7. [Panduan Training & Evaluasi Model](#7-panduan-training--evaluasi-model)
-8. [Referensi Ilmiah & Studi Terkait (Academic References)](#8-referensi-ilmiah--studi-terkait-academic-references)
+
 
 ---
 
@@ -320,10 +320,6 @@ Pengembangan sistem **Ternak Lele** didasarkan pada tinjauan pustaka akademik, r
     Laporan Tugas Akhir, Program Studi Budidaya Perikanan, Jurusan Perikanan dan Kelautan, **Politeknik Negeri Lampung**, Bandar Lampung.  
     *   **Fokus & Temuan**: Evaluasi teknik pembesaran lele mutiara sistem intensif selama 72 hari, manajemen pakan *Ad-Satiation* (3 kali sehari, protein 31%), dan pemantauan kualitas air harian (suhu 27–30°C, pH 6.5–8.0, DO > 3–5 mg/L, amonia < 0.1 mg/L).  
     *   **Adopsi pada Ternak Lele**: Menjadi dasar ilmiah untuk pemodelan kelas non-infeksius `Overfeeding` (distensi perut tanpa lesi berdarah akibat pelet mengembang di lambung), pencegahan lonjakan amonia akibat sisa pakan, dan penyusunan basis pengetahuan obat/probiotik pada modul edukasi.
-
-6.  **Silabus & Rubrik Proyek Pengenalan Pola (2025).**  
-    *Panduan Standar Kurikulum Proyek Pengenalan Pola (Pattern Recognition).*  
-    *   **Fokus**: Format baku 5 bab penilaian (@20%): Pendahuluan & Rumusan Masalah, Dasar Teori & Siklus Pengenalan Pola, Metodologi & Preprocessing Data, Eksperimen & Analisis Confusion Matrix (target akurasi $\ge 85\%$), serta Kesimpulan & Rekomendasi Masa Depan.
 
 ---
 *Ternak Lele — Membantu Pembudidaya Lele Indonesia dengan Kekuatan Teknologi AI.* 🇮🇩🐟
